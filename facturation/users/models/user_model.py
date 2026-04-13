@@ -1,7 +1,9 @@
-from sqlmodel import SQLModel, Field
+from sqlalchemy import Column, Integer, String
+from facturation.database.base import Base
 
-class User(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    email: str
-    password: str
-    created_at: str
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, nullable=False)
+    password = Column(String, unique=True, index=True)
