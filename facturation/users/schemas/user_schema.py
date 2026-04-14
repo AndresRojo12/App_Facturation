@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from datetime import datetime
 
 class UserCreate(BaseModel):
     email: str
@@ -10,5 +11,7 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str  
-        
+    created_at: datetime
+    updated_at: datetime
+
 
