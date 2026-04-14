@@ -5,3 +5,10 @@ class UserCreate(BaseModel):
     email: str
     password: str
 
+# response_model = UserCreate
+# 
+class UserResponse(BaseModel):
+    id: int
+    email: str  
+        
+
