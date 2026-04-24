@@ -3,11 +3,13 @@
 from facturation.database.dependencies.dependencie_session import SessionDep
 from facturation.users.models.user_model import User
 from facturation.users.schemas.user_schema import UserCreate, UserInDB, UserResponse
+from facturation.core.security import fake_hash_password
 
 async def create_user(user: UserCreate, db: SessionDep) -> UserResponse:
+    hashed_password = fake_hash_password(user.password)
     new_user = User(
      email=user.email, 
-     password=user.password)
+     password=hashed_password)
     
     db.add(new_user)
     db.commit()
@@ -16,7 +18,5 @@ async def create_user(user: UserCreate, db: SessionDep) -> UserResponse:
 
 # traer usuario de la base de datos
 
-async def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+async def get_user(db: SessionDep, email: str):
+    return db.query(User).filter(User.email == email).first()
