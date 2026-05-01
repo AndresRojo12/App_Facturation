@@ -1,0 +1,20 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "facturaction frontend",
+  "homepage": "https://github.com/AndresRojo12/App_Facturation#readme",
+  "bugs": {
+    "url": "https://github.com/AndresRojo12/App_Facturation/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndresRojo12/App_Facturation.git"
+  },
+  "license": "ISC",
+  "author": "AndresRojo12",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
