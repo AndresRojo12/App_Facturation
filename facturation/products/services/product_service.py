@@ -6,6 +6,11 @@ from facturation.database.dependencies.dependencie_session import SessionDep
 from facturation.products.models.product_model import Product
 from facturation.products.schemas.product_schema import ProductCreate, ProductResponse
 
+# create function all get products from the database
+async def get_products(db: SessionDep) -> list[ProductResponse]:
+    products = db.query(Product).all()
+    return products
+
 # create function to create new product in the database
 
 async def create_product(product: ProductCreate, db: SessionDep) -> ProductResponse:
