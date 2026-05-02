@@ -88,6 +88,9 @@ export default function Dashboard() {
               <button
                 key={item.label}
                 type="button"
+                onClick={() => {
+                  if (item.label === "Productos") navigate("/products");
+                }}
                 className={`flex w-full items-center justify-between rounded-3xl px-4 py-3 text-left text-sm transition ${
                   item.active
                     ? "bg-cyan-500/10 text-cyan-300 shadow-inner shadow-cyan-500/10"
@@ -131,9 +134,22 @@ export default function Dashboard() {
 
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {summaryCards.map((card) => (
-              <article key={card.title} className={`rounded-3xl p-5 shadow-2xl shadow-slate-950/25 ${card.bg}`}>
+              <button
+                key={card.title}
+                type="button"
+                onClick={() => {
+                  if (card.title === "Productos") {
+                    navigate("/products");
+                  }
+                }}
+                className={`rounded-3xl p-5 shadow-2xl shadow-slate-950/25 ${card.bg} transition ${
+                  card.title === "Productos" 
+                    ? "hover:shadow-2xl hover:shadow-teal-500/40 hover:scale-105 cursor-pointer"
+                    : ""
+                }`}
+              >
                 <div className="flex items-center justify-between gap-3">
-                  <div>
+                  <div className="text-left">
                     <p className="text-sm font-medium text-slate-200/90">{card.title}</p>
                     <p className="mt-4 text-3xl font-semibold text-white">{card.value}</p>
                   </div>
@@ -142,7 +158,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-slate-200/80">{card.change}</p>
-              </article>
+              </button>
             ))}
           </div>
 
