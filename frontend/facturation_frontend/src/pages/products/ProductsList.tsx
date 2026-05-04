@@ -1,32 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ProductForm from "./ProductForm";
-
-const navigationItems = [
-  { label: "Dashboard", active: false },
-  { label: "Punto de Venta" },
-  { label: "Productos", active: true },
-  { label: "Facturas" },
-  { label: "Clientes" },
-  { label: "Reportes" },
-  { label: "Usuarios" },
-  { label: "Configuración" },
-];
-
-const mockProducts = [
-  { id: "P-001", name: "Laptop Pro 15", category: "Electrónica", price: "$1,250.00", stock: 18, status: "Activo" },
-  { id: "P-002", name: "Mouse inalámbrico", category: "Accesorios", price: "$28.00", stock: 54, status: "Activo" },
-  { id: "P-003", name: "Teclado mecánico RGB", category: "Accesorios", price: "$85.00", stock: 34, status: "Activo" },
-  { id: "P-004", name: "Monitor 27'' 4K", category: "Monitores", price: "$420.00", stock: 12, status: "Activo" },
-  { id: "P-005", name: "Webcam HD 1080p", category: "Accesorios", price: "$65.00", stock: 0, status: "Agotado" },
-  { id: "P-006", name: "Audífonos Bluetooth", category: "Audio", price: "$95.00", stock: 28, status: "Activo" },
-  { id: "P-007", name: "Cable HDMI 2.1", category: "Cables", price: "$15.00", stock: 120, status: "Activo" },
-  { id: "P-008", name: "Hub USB-C", category: "Accesorios", price: "$45.00", stock: 7, status: "Bajo stock" },
-];
+import ProductForm, { type ProductFormData } from "./ProductForm";
+import { api } from "../../services/api";
 
 export default function ProductsList() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -36,11 +18,83 @@ export default function ProductsList() {
     navigate("/", { replace: true });
   }
 
-  function handleCreateProduct(formData: any) {
-    // Aquí irá la lógica para enviar el producto a la API
-    console.log("Producto creado:", formData);
-    setShowCreateModal(false);
+  async function handleCreateProduct(formData: ProductFormData) {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Obtener el token del localStorage
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No se encontró el token de autenticación");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      // Preparar los datos para enviar al backend
+      const productData = {
+        name: formData.name,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        activo: formData.activo,
+      };
+
+      // Enviar la solicitud POST a la API
+      const response = await api.post("/products", productData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Producto creado exitosamente:", response.data);
+
+      // Cerrar el modal
+      setShowCreateModal(false);
+
+      // Aquí podrías actualizar la lista de productos si tienes estado para ello
+      // Por ahora solo mostramos un mensaje de éxito
+      alert("Producto creado exitosamente");
+
+    } catch (error: any) {
+      console.error("Error al crear producto:", error);
+
+      if (error.response?.status === 401) {
+        setError("Sesión expirada. Por favor, inicia sesión nuevamente.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/", { replace: true });
+      } else if (error.response?.status === 422) {
+        setError("Datos inválidos. Por favor, verifica la información ingresada.");
+      } else {
+        setError(error.response?.data?.detail || "Error al crear el producto");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
+
+
+useEffect(() => {
+  fetchProducts();
+}, []);
+
+async function fetchProducts() {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await api.get("/products", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("Productos:", response.data);
+    setProducts(response.data);
+
+  } catch (error: any) {
+    console.error("Error al obtener productos:", error);
+  }
+}
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -57,7 +111,7 @@ export default function ProductsList() {
           </div>
 
           <nav className="space-y-2">
-            {navigationItems.map((item) => (
+            {products.map((item) => (
               <button
                 key={item.label}
                 type="button"
@@ -110,7 +164,6 @@ export default function ProductsList() {
                   <tr>
                     <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">ID</th>
                     <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Nombre</th>
-                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Categoría</th>
                     <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Precio</th>
                     <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Stock</th>
                     <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Estado</th>
@@ -118,11 +171,10 @@ export default function ProductsList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/70 bg-slate-950">
-                  {mockProducts.map((product) => (
+                  {products.map((product) => (
                     <tr key={product.id} className="transition hover:bg-slate-900/90">
                       <td className="px-6 py-4 font-medium text-cyan-300">{product.id}</td>
                       <td className="px-6 py-4 text-white">{product.name}</td>
-                      <td className="px-6 py-4 text-slate-300">{product.category}</td>
                       <td className="px-6 py-4 font-semibold text-emerald-400">{product.price}</td>
                       <td className="px-6 py-4 text-slate-300">{product.stock}</td>
                       <td className="px-6 py-4">
@@ -130,12 +182,12 @@ export default function ProductsList() {
                           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                             product.status === "Activo"
                               ? "bg-emerald-500/10 text-emerald-300"
-                              : product.status === "Bajo stock"
+                              : product.activo === "Bajo stock"
                               ? "bg-amber-500/10 text-amber-300"
                               : "bg-rose-500/10 text-rose-300"
                           }`}
                         >
-                          {product.status}
+                          {product.activo ? "Activo" : product.stock < 5 ? "Bajo stock" : "Inactivo"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -163,7 +215,7 @@ export default function ProductsList() {
 
           <div className="mt-6 flex justify-between rounded-2xl border border-slate-800/70 bg-slate-900/50 px-6 py-4">
             <div className="text-sm text-slate-400">
-              Total de productos: <span className="font-semibold text-white">{mockProducts.length}</span>
+              Total de productos: <span className="font-semibold text-white">{products.length}</span>
             </div>
             <div className="flex gap-3">
               <button
@@ -187,6 +239,8 @@ export default function ProductsList() {
         <ProductForm
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleCreateProduct}
+          isLoading={isLoading}
+          error={error}
         />
       )}
 
