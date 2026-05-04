@@ -1,36 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const summaryCards = [
-  {
-    title: "Ventas del día",
-    value: "$1,250.00",
-    change: "+12.5% vs ayer",
-    icon: "💵",
-    bg: "bg-gradient-to-r from-cyan-500 to-blue-600",
-  },
-  {
-    title: "Facturas del día",
-    value: 18,
-    change: "+8.3% vs ayer",
-    icon: "🧾",
-    bg: "bg-gradient-to-r from-violet-500 to-purple-600",
-  },
-  {
-    title: "Productos",
-    value: 243,
-    change: "En inventario",
-    icon: "📦",
-    bg: "bg-gradient-to-r from-emerald-500 to-teal-600",
-  },
-  {
-    title: "Clientes",
-    value: 156,
-    change: "Registrados",
-    icon: "👥",
-    bg: "bg-gradient-to-r from-orange-500 to-rose-600",
-  },
-];
+import { api } from "../services/api";
 
 const invoiceRows = [
   { id: "F001-000018", client: "María López", date: "25/05/2024", total: "$120.00", status: "Pagada" },
@@ -42,18 +12,79 @@ const invoiceRows = [
 
 const navigationItems = [
   { label: "Dashboard", active: true },
-  { label: "Punto de Venta" },
-  { label: "Productos" },
-  { label: "Facturas" },
-  { label: "Clientes" },
-  { label: "Reportes" },
-  { label: "Usuarios" },
-  { label: "Configuración" },
+  { label: "Punto de Venta", active: false },
+  { label: "Productos", active: false },
+  { label: "Facturas", active: false },
+  { label: "Clientes", active: false },
+  { label: "Reportes", active: false },
+  { label: "Usuarios", active: false },
+  { label: "Configuración", active: false },
 ];
 
 export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [productsCount, setProductsCount] = useState(0);
   const navigate = useNavigate();
+
+  // Función para obtener la cantidad de productos
+  const fetchProductsCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No se encontró el token de autenticación");
+        return;
+      }
+
+      const response = await api.get("/products", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setProductsCount(response.data.length);
+    } catch (error: any) {
+      console.error("Error al obtener productos:", error);
+      // En caso de error, mantener el valor actual o mostrar 0
+      setProductsCount(0);
+    }
+  };
+
+  // Cargar la cantidad de productos al montar el componente
+  useEffect(() => {
+    fetchProductsCount();
+  }, []);
+
+  // Tarjetas de resumen con datos dinámicos
+  const summaryCards = [
+    {
+      title: "Ventas del día",
+      value: "$1,250.00",
+      change: "+12.5% vs ayer",
+      icon: "💵",
+      bg: "bg-gradient-to-r from-cyan-500 to-blue-600",
+    },
+    {
+      title: "Facturas del día",
+      value: 18,
+      change: "+8.3% vs ayer",
+      icon: "🧾",
+      bg: "bg-gradient-to-r from-violet-500 to-purple-600",
+    },
+    {
+      title: "Productos",
+      value: productsCount,
+      change: "En inventario",
+      icon: "📦",
+      bg: "bg-gradient-to-r from-emerald-500 to-teal-600",
+    },
+    {
+      title: "Clientes",
+      value: 156,
+      change: "Registrados",
+      icon: "👥",
+      bg: "bg-gradient-to-r from-orange-500 to-rose-600",
+    },
+  ];
 
   function handleLogout() {
     // eliminar token
