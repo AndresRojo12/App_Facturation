@@ -3,6 +3,17 @@ import { useNavigate } from "react-router-dom";
 import ProductForm, { type ProductFormData } from "./ProductForm";
 import { api } from "../../services/api";
 
+const navigationItems = [
+  { label: "Dashboard", active: false },
+  { label: "Punto de Venta", active: false },
+  { label: "Productos", active: true },
+  { label: "Facturas", active: false },
+  { label: "Clientes", active: false },
+  { label: "Reportes", active: false },
+  { label: "Usuarios", active: false },
+  { label: "Configuración", active: false },
+];
+
 export default function ProductsList() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -111,12 +122,22 @@ async function fetchProducts() {
           </div>
 
           <nav className="space-y-2">
-            {products.map((item) => (
+            {navigationItems.map((item) => (
               <button
                 key={item.label}
                 type="button"
                 onClick={() => {
-                  if (item.label === "Dashboard") navigate("/dashboard");
+                  const routes: Record<string, string> = {
+                    "Dashboard": "/dashboard",
+                    "Punto de Venta": "/punto-venta",
+                    "Productos": "/productos",
+                    "Facturas": "/facturas",
+                    "Clientes": "/clientes",
+                    "Reportes": "/reportes",
+                    "Usuarios": "/usuarios",
+                    "Configuración": "/configuracion",
+                  };
+                  navigate(routes[item.label]);
                 }}
                 className={`flex w-full items-center justify-between rounded-3xl px-4 py-3 text-left text-sm transition ${
                   item.active
