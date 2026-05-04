@@ -9,7 +9,7 @@ import jwt
 
 from facturation.users.services.user_service import get_user
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 
 def fake_decode_token(token: str, db: SessionDep):
     user = get_user(db,token)
