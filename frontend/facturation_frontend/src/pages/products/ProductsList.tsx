@@ -20,6 +20,7 @@ export default function ProductsList() {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -169,13 +170,22 @@ async function fetchProducts() {
                 Administra tu catálogo de productos, precios e inventario.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-110"
-            >
-              ➕ Crear producto
-            </button>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3">
+              <input
+                type="text"
+                placeholder="🔍 Buscar producto..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="rounded-2xl border border-slate-700/60 bg-slate-900/60 px-4 py-3 text-sm text-white placeholder-slate-400 transition focus:border-cyan-400/50 focus:outline-none focus:ring-1 focus:ring-cyan-400/30"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-110 whitespace-nowrap"
+              >
+                ➕ Crear producto
+              </button>
+            </div>
           </div>
 
           <div className="overflow-hidden rounded-[2rem] border border-slate-800/70 bg-slate-900/70 shadow-xl shadow-slate-950/20">
@@ -192,7 +202,11 @@ async function fetchProducts() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/70 bg-slate-950">
-                  {products.map((product) => (
+                  {products
+                    .filter((product) =>
+                      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((product) => (
                     <tr key={product.id} className="transition hover:bg-slate-900/90">
                       <td className="px-6 py-4 font-medium text-cyan-300">{product.id}</td>
                       <td className="px-6 py-4 text-white">{product.name}</td>
@@ -236,7 +250,7 @@ async function fetchProducts() {
 
           <div className="mt-6 flex justify-between rounded-2xl border border-slate-800/70 bg-slate-900/50 px-6 py-4">
             <div className="text-sm text-slate-400">
-              Total de productos: <span className="font-semibold text-white">{products.length}</span>
+              Productos mostrados: <span className="font-semibold text-white">{products.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase())).length}</span> / {products.length}
             </div>
             <div className="flex gap-3">
               <button
