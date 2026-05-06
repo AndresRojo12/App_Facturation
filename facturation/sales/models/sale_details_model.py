@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer
+from sqlalchemy.orm import relationship
 from facturation.database.base import Base
 
 class SaleDetails(Base):
@@ -14,3 +15,5 @@ class SaleDetails(Base):
     subtotal = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    sale = relationship("Sale", back_populates="details")
