@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from facturation.database.base import Base
 
-class SaleDetails(Base):
+class SaleDetail(Base):
     __tablename__ = "sale_details"
 
     id = Column(Integer, primary_key=True, index=True)
