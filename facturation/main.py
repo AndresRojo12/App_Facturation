@@ -3,6 +3,7 @@ from facturation.products.routers import products
 from facturation.sales.routers import sale_router
 from facturation.users.routers import users
 from facturation.core.config import settings
+from facturation.database import models  # Import all models to register them
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title=settings.APP_NAME)

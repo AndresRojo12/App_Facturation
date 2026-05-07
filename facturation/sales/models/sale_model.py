@@ -14,4 +14,4 @@ class Sale(Base):
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     user = relationship("User")
-    details = relationship("SaleDetails", back_populates="sale")
+    details = relationship("SaleDetail", back_populates="sale")
