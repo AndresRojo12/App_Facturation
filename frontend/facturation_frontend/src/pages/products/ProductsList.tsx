@@ -17,6 +17,9 @@ const navigationItems = [
 export default function ProductsList() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showStockModal, setShowStockModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [stockToAdd, setStockToAdd] = useState("");
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +69,6 @@ export default function ProductsList() {
       // Aquí podrías actualizar la lista de productos si tienes estado para ello
       // Por ahora solo mostramos un mensaje de éxito
       alert("Producto creado exitosamente");
-
     } catch (error: any) {
       console.error("Error al crear producto:", error);
 
@@ -76,7 +78,9 @@ export default function ProductsList() {
         localStorage.removeItem("user");
         navigate("/", { replace: true });
       } else if (error.response?.status === 422) {
-        setError("Datos inválidos. Por favor, verifica la información ingresada.");
+        setError(
+          "Datos inválidos. Por favor, verifica la información ingresada.",
+        );
       } else {
         setError(error.response?.data?.detail || "Error al crear el producto");
       }
@@ -85,28 +89,53 @@ export default function ProductsList() {
     }
   }
 
+  async function handleAddStock() {
+    try {
+      const token = localStorage.getItem("token");
 
-useEffect(() => {
-  fetchProducts();
-}, []);
+      await api.patch(
+        `/products/${selectedProduct.id}/stock?quantity=${parseInt(stockToAdd)}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-async function fetchProducts() {
-  try {
-    const token = localStorage.getItem("token");
+      alert("Stock actualizado correctamente");
 
-    const response = await api.get("/products", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      setShowStockModal(false);
+      setStockToAdd("");
+      setSelectedProduct(null);
 
-    console.log("Productos:", response.data);
-    setProducts(response.data);
-
-  } catch (error: any) {
-    console.error("Error al obtener productos:", error);
+      fetchProducts();
+    } catch (error: any) {
+      console.error(error);
+      alert("Error al actualizar stock");
+    }
   }
-}
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  async function fetchProducts() {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await api.get("/products", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Productos:", response.data);
+      setProducts(response.data);
+    } catch (error: any) {
+      console.error("Error al obtener productos:", error);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -117,8 +146,12 @@ async function fetchProducts() {
               💼
             </div>
             <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Facturación</p>
-              <h2 className="text-lg font-semibold text-white">Facturación Pro</h2>
+              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">
+                Facturación
+              </p>
+              <h2 className="text-lg font-semibold text-white">
+                Facturación Pro
+              </h2>
             </div>
           </div>
 
@@ -129,14 +162,14 @@ async function fetchProducts() {
                 type="button"
                 onClick={() => {
                   const routes: Record<string, string> = {
-                    "Dashboard": "/dashboard",
+                    Dashboard: "/dashboard",
                     "Punto de Venta": "/sales",
-                    "Productos": "/productos",
-                    "Facturas": "/facturas",
-                    "Clientes": "/clientes",
-                    "Reportes": "/reportes",
-                    "Usuarios": "/usuarios",
-                    "Configuración": "/configuracion",
+                    Productos: "/productos",
+                    Facturas: "/facturas",
+                    Clientes: "/clientes",
+                    Reportes: "/reportes",
+                    Usuarios: "/usuarios",
+                    Configuración: "/configuracion",
                   };
                   navigate(routes[item.label]);
                 }}
@@ -164,8 +197,12 @@ async function fetchProducts() {
         <main className="px-4 py-6 sm:px-6 lg:px-8">
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">Gestión</p>
-              <h1 className="mt-3 text-3xl font-semibold text-white">Productos</h1>
+              <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">
+                Gestión
+              </p>
+              <h1 className="mt-3 text-3xl font-semibold text-white">
+                Productos
+              </h1>
               <p className="mt-2 max-w-2xl text-slate-400">
                 Administra tu catálogo de productos, precios e inventario.
               </p>
@@ -200,63 +237,103 @@ async function fetchProducts() {
               <table className="min-w-full text-left text-sm text-slate-200">
                 <thead className="border-b border-slate-800/70 bg-slate-950/90 text-slate-400">
                   <tr>
-                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">ID</th>
-                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Nombre</th>
-                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Precio</th>
-                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Stock</th>
-                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Estado</th>
-                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">Acciones</th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">
+                      ID
+                    </th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">
+                      Nombre
+                    </th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">
+                      Precio
+                    </th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">
+                      Stock
+                    </th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">
+                      Estado
+                    </th>
+                    <th className="px-6 py-4 font-semibold uppercase tracking-[0.15em]">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/70 bg-slate-950">
                   {products
                     .filter((product) =>
-                      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+                      product.name
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()),
                     )
                     .map((product) => (
-                    <tr key={product.id} className="transition hover:bg-slate-900/90">
-                      <td className="px-6 py-4 font-medium text-cyan-300">{product.id}</td>
-                      <td className="px-6 py-4 text-white">{product.name}</td>
-                      <td className="px-6 py-4 font-semibold text-emerald-400">{product.price}</td>
-                      <td className="px-6 py-4 text-slate-300">{product.stock}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            product.status === "Activo"
-                              ? "bg-emerald-500/10 text-emerald-300"
-                              : product.activo === "No hay stock"
-                              ? "bg-amber-500/10 text-amber-300"
-                              : "bg-rose-500/10 text-rose-300"
-                          }`}
-                        >
-                          {product.activo ? "Activo" : product.stock < 5 ? "No hay stock" : "Inactivo"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => navigate("/sales")}
-                            className="rounded-lg bg-blue-500/20 px-3 py-1.5 text-xs font-medium text-blue-300 transition hover:bg-blue-500/30"
+                      <tr
+                        key={product.id}
+                        className="transition hover:bg-slate-900/90"
+                      >
+                        <td className="px-6 py-4 font-medium text-cyan-300">
+                          {product.id}
+                        </td>
+                        <td className="px-6 py-4 text-white">{product.name}</td>
+                        <td className="px-6 py-4 font-semibold text-emerald-400">
+                          {product.price}
+                        </td>
+                        <td className="px-6 py-4 text-slate-300">
+                          {product.stock}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                              product.status === "Activo"
+                                ? "bg-emerald-500/10 text-emerald-300"
+                                : product.activo === "No hay stock"
+                                  ? "bg-amber-500/10 text-amber-300"
+                                  : "bg-rose-500/10 text-rose-300"
+                            }`}
                           >
-                            💰 Vender
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded-lg bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition hover:bg-rose-500/20"
-                          >
-                            🗑️ Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {product.activo
+                              ? "Activo"
+                              : product.stock < 5
+                                ? "No hay stock"
+                                : "Inactivo"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => navigate("/sales")}
+                              className="rounded-lg bg-blue-500/20 px-3 py-1.5 text-xs font-medium text-blue-300 transition hover:bg-blue-500/30"
+                            >
+                              💰 Vender
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setShowStockModal(true);
+                              }}
+                              className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-500/20"
+                            >
+                              📦 Agregar stock
+                            </button>
+
+                            <button
+                              type="button"
+                              className="rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
+                            >
+                              ✏️ Editar
+                            </button>
+
+                            <button
+                              type="button"
+                              className="rounded-lg bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition hover:bg-rose-500/20"
+                            >
+                              🗑️ Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -264,7 +341,17 @@ async function fetchProducts() {
 
           <div className="mt-6 flex justify-between rounded-2xl border border-slate-800/70 bg-slate-900/50 px-6 py-4">
             <div className="text-sm text-slate-400">
-              Productos mostrados: <span className="font-semibold text-white">{products.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase())).length}</span> / {products.length}
+              Productos mostrados:{" "}
+              <span className="font-semibold text-white">
+                {
+                  products.filter((product) =>
+                    product.name
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase()),
+                  ).length
+                }
+              </span>{" "}
+              / {products.length}
             </div>
             <div className="flex gap-3">
               <button
@@ -293,14 +380,76 @@ async function fetchProducts() {
         />
       )}
 
+      {showStockModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-white">
+                Agregar stock
+              </h2>
+
+              <button
+                onClick={() => {
+                  setShowStockModal(false);
+                  setSelectedProduct(null);
+                }}
+                className="rounded-full bg-slate-800 px-3 py-1 text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-6">
+              <p className="text-slate-300">Producto:</p>
+
+              <div className="mt-2 rounded-2xl bg-slate-800 p-4">
+                <p className="font-semibold text-white">
+                  {selectedProduct?.name}
+                </p>
+
+                <p className="mt-1 text-sm text-slate-400">
+                  Stock actual: {selectedProduct?.stock}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <label className="mb-2 block text-sm text-slate-300">
+                Cantidad a agregar
+              </label>
+
+              <input
+                type="number"
+                min="1"
+                value={stockToAdd}
+                onChange={(e) => setStockToAdd(e.target.value)}
+                className="w-full rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-400"
+                placeholder="Ej: 20"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddStock}
+              className="mt-6 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-3 font-semibold text-white transition hover:brightness-110"
+            >
+              Guardar stock
+            </button>
+          </div>
+        </div>
+      )}
+
       {showLogoutModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-8 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-[2rem] border border-slate-700/80 bg-slate-900 p-6 shadow-2xl shadow-slate-950/60">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-semibold text-white">Cerrar sesión</h3>
+                <h3 className="text-2xl font-semibold text-white">
+                  Cerrar sesión
+                </h3>
                 <p className="mt-2 text-sm text-slate-400">
-                  ¿Seguro que deseas cerrar sesión? Puedes volver a iniciar sesión cuando quieras.
+                  ¿Seguro que deseas cerrar sesión? Puedes volver a iniciar
+                  sesión cuando quieras.
                 </p>
               </div>
               <button
