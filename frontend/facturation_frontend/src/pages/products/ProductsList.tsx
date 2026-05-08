@@ -130,7 +130,7 @@ async function fetchProducts() {
                 onClick={() => {
                   const routes: Record<string, string> = {
                     "Dashboard": "/dashboard",
-                    "Punto de Venta": "/punto-venta",
+                    "Punto de Venta": "/sales",
                     "Productos": "/productos",
                     "Facturas": "/facturas",
                     "Clientes": "/clientes",
@@ -180,6 +180,13 @@ async function fetchProducts() {
               />
               <button
                 type="button"
+                onClick={() => navigate("/sales")}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:brightness-110 whitespace-nowrap"
+              >
+                💰 Nueva Venta
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowCreateModal(true)}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-110 whitespace-nowrap"
               >
@@ -217,16 +224,23 @@ async function fetchProducts() {
                           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                             product.status === "Activo"
                               ? "bg-emerald-500/10 text-emerald-300"
-                              : product.activo === "Bajo stock"
+                              : product.activo === "No hay stock"
                               ? "bg-amber-500/10 text-amber-300"
                               : "bg-rose-500/10 text-rose-300"
                           }`}
                         >
-                          {product.activo ? "Activo" : product.stock < 5 ? "Bajo stock" : "Inactivo"}
+                          {product.activo ? "Activo" : product.stock < 5 ? "No hay stock" : "Inactivo"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => navigate("/sales")}
+                            className="rounded-lg bg-blue-500/20 px-3 py-1.5 text-xs font-medium text-blue-300 transition hover:bg-blue-500/30"
+                          >
+                            💰 Vender
+                          </button>
                           <button
                             type="button"
                             className="rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
