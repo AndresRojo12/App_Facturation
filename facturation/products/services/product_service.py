@@ -14,11 +14,17 @@ async def get_products(db: SessionDep) -> list[ProductResponse]:
 # create function to create new product in the database
 
 async def create_product(product: ProductCreate, db: SessionDep) -> ProductResponse:
+    # validar si el producto ya existe 
+    existing_product = db.query(Product).filter(Product.name == product.name).first()
+    if existing_product:
+        raise HTTPException(status_code=400, detail="Product already exists")
+    
+    activo = product.stock > 0
     new_product = Product(
      name=product.name, 
      price=product.price,
      stock=product.stock,
-     activo=product.activo)
+     activo=activo)
     
     db.add(new_product)
     db.commit()
@@ -30,4 +36,16 @@ async def get_product(product_id: int, db: SessionDep) -> ProductResponse:
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+# add stock to a product
+async def add_stock(product_id: int, quantity: int, db: SessionDep) -> ProductResponse:
+    product = await get_product(product_id, db)
+    product.stock += quantity
+    if product.stock > 0:
+        product.activo = True
+
+    db.add(product)
+    db.commit()
+    db.refresh(product)
     return product
