@@ -59,7 +59,7 @@ export function SaleForm() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await api.get("/products/", {
+      const response = await api.get("/products?offset=0&limit=10000", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

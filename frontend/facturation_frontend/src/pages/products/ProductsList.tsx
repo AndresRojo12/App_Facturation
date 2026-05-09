@@ -21,6 +21,7 @@ export default function ProductsList() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [stockToAdd, setStockToAdd] = useState("");
   const [products, setProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -144,6 +145,27 @@ export default function ProductsList() {
     }
   }
 
+  async function fetchAllProducts() {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await api.get(`/products?offset=0&limit=10000`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setAllProducts(response.data.products);
+    } catch (error: any) {
+      console.error("Error al obtener todos los productos:", error);
+      setAllProducts([]);
+    }
+  }
+
+  useEffect(() => {
+    if (searchTerm.trim() !== "") {
+      fetchAllProducts();
+    }
+  }, [searchTerm]);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_1fr]">
@@ -265,7 +287,7 @@ export default function ProductsList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/70 bg-slate-950">
-                  {products
+                  {(searchTerm.trim() !== "" ? allProducts : products)
                     .filter((product) =>
                       product.name
                         .toLowerCase()
@@ -351,33 +373,36 @@ export default function ProductsList() {
               Productos mostrados:{" "}
               <span className="font-semibold text-white">
                 {
-                  products.filter((product) =>
-                    product.name
-                      .toLowerCase()
-                      .includes(searchTerm.toLowerCase()),
-                  ).length
+                  (searchTerm.trim() !== "" ? allProducts : products)
+                    .filter((product) =>
+                      product.name
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()),
+                    ).length
                 }
               </span>{" "}
               / {totalProducts}
             </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => fetchProducts(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ← Anterior
-              </button>
-              <button
-                type="button"
-                onClick={() => fetchProducts(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Siguiente →
-              </button>
-            </div>
+            {searchTerm.trim() === "" && (
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => fetchProducts(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ← Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fetchProducts(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Siguiente →
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>
