@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, AlertCircle, CheckCircle } from 'lucide-react';
-import { SaleCart } from './components/SaleCart';
-import { api } from '../../services/api';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search, AlertCircle, CheckCircle } from "lucide-react";
+import { SaleCart } from "./components/SaleCart";
+import { api } from "../../services/api";
 
 interface Product {
   id: number;
@@ -20,14 +20,16 @@ interface CartItem {
 }
 
 interface AlertMessage {
-  type: 'success' | 'error' | 'info';
+  type: "success" | "error" | "info";
   message: string;
 }
 
 export function SaleForm() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [invoiceData, setInvoiceData] = useState<any | null>(null);
+  const [showInvoice, setShowInvoice] = useState(false);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -41,13 +43,13 @@ export function SaleForm() {
 
   // Buscar productos cuando cambia el término de búsqueda
   useEffect(() => {
-    if (searchTerm.trim() === '') {
+    if (searchTerm.trim() === "") {
       setSearchResults([]);
     } else {
       const filtered = products.filter(
         (product) =>
           product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          product.stock > 0
+          product.stock > 0,
       );
       setSearchResults(filtered);
     }
@@ -56,35 +58,37 @@ export function SaleForm() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await api.get('/products/', {
+      const token = localStorage.getItem("token");
+      const response = await api.get("/products/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       setProducts(response.data);
     } catch (error) {
-      console.error('Error al obtener productos:', error);
-      showAlert('error', 'Error al cargar los productos');
+      console.error("Error al obtener productos:", error);
+      showAlert("error", "Error al cargar los productos");
     } finally {
       setLoading(false);
     }
   };
 
-  const showAlert = (type: 'success' | 'error' | 'info', message: string) => {
+  const showAlert = (type: "success" | "error" | "info", message: string) => {
     setAlert({ type, message });
     setTimeout(() => setAlert(null), 4000);
   };
 
   const addToCart = (product: Product) => {
-    const existingItem = cartItems.find((item) => item.product_id === product.id);
+    const existingItem = cartItems.find(
+      (item) => item.product_id === product.id,
+    );
 
     if (existingItem) {
       if (existingItem.quantity < product.stock) {
         updateQuantity(product.id, existingItem.quantity + 1);
-        showAlert('info', `${product.name} - cantidad actualizada`);
+        showAlert("info", `${product.name} - cantidad actualizada`);
       } else {
-        showAlert('error', `No hay suficiente stock de ${product.name}`);
+        showAlert("error", `No hay suficiente stock de ${product.name}`);
       }
     } else {
       const newItem: CartItem = {
@@ -95,9 +99,9 @@ export function SaleForm() {
         subtotal: product.price,
       };
       setCartItems([...cartItems, newItem]);
-      showAlert('success', `${product.name} agregado al carrito`);
+      showAlert("success", `${product.name} agregado al carrito`);
     }
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   const updateQuantity = (product_id: number, quantity: number) => {
@@ -108,7 +112,7 @@ export function SaleForm() {
 
     const product = products.find((p) => p.id === product_id);
     if (product && quantity > product.stock) {
-      showAlert('error', `No hay suficiente stock`);
+      showAlert("error", `No hay suficiente stock`);
       return;
     }
 
@@ -119,7 +123,7 @@ export function SaleForm() {
             quantity,
             subtotal: item.price * quantity,
           }
-        : item
+        : item,
     );
     setCartItems(updatedCart);
   };
@@ -127,18 +131,18 @@ export function SaleForm() {
   const removeFromCart = (product_id: number) => {
     const product = cartItems.find((item) => item.product_id === product_id);
     setCartItems(cartItems.filter((item) => item.product_id !== product_id));
-    showAlert('info', `${product?.product_name} eliminado del carrito`);
+    showAlert("info", `${product?.product_name} eliminado del carrito`);
   };
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
-      showAlert('error', 'El carrito está vacío');
+      showAlert("error", "El carrito está vacío");
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const saleData = {
         items: cartItems.map((item) => ({
           product_id: item.product_id,
@@ -146,23 +150,165 @@ export function SaleForm() {
         })),
       };
 
-      const response = await api.post('/sales/', saleData, {
+      const response = await api.post("/sales/", saleData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      showAlert('success', 'Venta realizada exitosamente');
+      const sale = response.data;
+      // generar factura
+      const invoice = {
+        invoice_number: `FAC-${sale.id.toString().padStart(6, "0")}`,
+        date: new Date().toLocaleDateString(),
+        items: cartItems,
+        total: cartItems.reduce((sum, item) => sum + item.subtotal, 0),
+      };
+      setInvoiceData(invoice);
+      setShowInvoice(true);
+
+      showAlert("success", "Venta realizada exitosamente");
+      // limpiar carrito
       setCartItems([]);
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+      fetchProducts;
     } catch (error) {
-      console.error('Error al realizar la venta:', error);
-      showAlert('error', 'Error al realizar la venta');
+      console.error("Error al realizar la venta:", error);
+      showAlert("error", "Error al realizar la venta");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const printInvoice = () => {
+  if (!invoiceData) return;
+
+  const invoiceWindow = window.open("", "_blank");
+
+  if (!invoiceWindow) return;
+
+  invoiceWindow.document.write(`
+    <html>
+      <head>
+        <title>Factura ${invoiceData.invoice_number}</title>
+
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            color: #111;
+          }
+
+          .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+          }
+
+          h1 {
+            margin: 0;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+
+          th, td {
+            border: 1px solid #ccc;
+            padding: 12px;
+            text-align: left;
+          }
+
+          th {
+            background: #f5f5f5;
+          }
+
+          .total {
+            margin-top: 30px;
+            text-align: right;
+          }
+
+          .total h2 {
+            color: #2563eb;
+          }
+
+          .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+          }
+
+          @media print {
+            button {
+              display: none;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+
+        <div class="header">
+          <div>
+            <h1>FACTURA</h1>
+            <p><strong>Número:</strong> ${invoiceData.invoice_number}</p>
+            <p><strong>Fecha:</strong> ${invoiceData.date}</p>
+          </div>
+
+          <div>
+            <h2>Facturación Pro</h2>
+            <p>Sistema de Ventas</p>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${invoiceData.items
+              .map(
+                (item: CartItem) => `
+                <tr>
+                  <td>${item.product_name}</td>
+                  <td>${item.quantity}</td>
+                  <td>$${item.price.toFixed(2)}</td>
+                  <td>$${item.subtotal.toFixed(2)}</td>
+                </tr>
+              `
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        <div class="total">
+          <p>Total a pagar</p>
+          <h2>$${invoiceData.total.toFixed(2)}</h2>
+        </div>
+
+        <div class="footer">
+          Gracias por su compra
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+
+      </body>
+    </html>
+  `);
+
+  invoiceWindow.document.close();
+};
 
   return (
     <div className="min-h-screen bg-gray-50 py-6">
@@ -171,10 +317,12 @@ export function SaleForm() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Nueva Venta</h1>
-            <p className="text-gray-600 mt-2">Busca productos y agrega cantidades para crear una venta</p>
+            <p className="text-gray-600 mt-2">
+              Busca productos y agrega cantidades para crear una venta
+            </p>
           </div>
           <button
-            onClick={() => navigate('/products')}
+            onClick={() => navigate("/products")}
             className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition duration-200"
           >
             ← Cancelar
@@ -185,14 +333,14 @@ export function SaleForm() {
         {alert && (
           <div
             className={`mb-4 p-4 rounded-lg flex items-center gap-3 ${
-              alert.type === 'success'
-                ? 'bg-green-100 text-green-800'
-                : alert.type === 'error'
-                ? 'bg-red-100 text-red-800'
-                : 'bg-blue-100 text-blue-800'
+              alert.type === "success"
+                ? "bg-green-100 text-green-800"
+                : alert.type === "error"
+                  ? "bg-red-100 text-red-800"
+                  : "bg-blue-100 text-blue-800"
             }`}
           >
-            {alert.type === 'success' ? (
+            {alert.type === "success" ? (
               <CheckCircle size={20} />
             ) : (
               <AlertCircle size={20} />
@@ -205,10 +353,15 @@ export function SaleForm() {
           {/* Search Section */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Buscar Productos</h2>
-              
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Buscar Productos
+              </h2>
+
               <div className="relative">
-                <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-3 top-3 text-gray-400"
+                  size={20}
+                />
                 <input
                   type="text"
                   value={searchTerm}
@@ -231,9 +384,12 @@ export function SaleForm() {
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
                         >
                           <div>
-                            <p className="font-medium text-gray-900">{product.name}</p>
+                            <p className="font-medium text-gray-900">
+                              {product.name}
+                            </p>
                             <p className="text-sm text-gray-600">
-                              Stock: {product.stock} | ${product.price.toFixed(2)}
+                              Stock: {product.stock} | $
+                              {product.price.toFixed(2)}
                             </p>
                           </div>
                           <button
@@ -272,6 +428,84 @@ export function SaleForm() {
           </div>
         </div>
       </div>
+      {showInvoice && invoiceData && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-2xl rounded-xl shadow-2xl p-8">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">Factura</h2>
+                <p className="text-gray-600 mt-1">
+                  Nº {invoiceData.invoice_number}
+                </p>
+              </div>
+
+              <div className="text-right">
+                <p className="font-semibold text-gray-900">Facturación Pro</p>
+                <p className="text-sm text-gray-600">
+                  Fecha: {invoiceData.date}
+                </p>
+              </div>
+            </div>
+
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="text-left p-3">Producto</th>
+                    <th className="text-center p-3">Cantidad</th>
+                    <th className="text-right p-3">Precio</th>
+                    <th className="text-right p-3">Subtotal</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {invoiceData.items.map((item: CartItem) => (
+                    <tr key={item.product_id} className="border-t">
+                      <td className="p-3">{item.product_name}</td>
+
+                      <td className="text-center p-3">{item.quantity}</td>
+
+                      <td className="text-right p-3">
+                        ${item.price.toFixed(2)}
+                      </td>
+
+                      <td className="text-right p-3 font-medium">
+                        ${item.subtotal.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <div className="text-right">
+                <p className="text-gray-600">Total a pagar</p>
+
+                <p className="text-4xl font-bold text-blue-600">
+                  ${invoiceData.total.toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 flex gap-3 justify-end">
+              <button
+                onClick={() => setShowInvoice(false)}
+                className="px-5 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 font-medium"
+              >
+                Cerrar
+              </button>
+
+              <button
+                onClick={printInvoice}
+                className="px-5 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+              >
+                🖨️ Imprimir/ Descargar Factura
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
