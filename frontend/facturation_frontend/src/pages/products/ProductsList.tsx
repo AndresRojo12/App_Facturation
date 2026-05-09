@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductForm, { type ProductFormData } from "./ProductForm";
+import ProductUpdate, { type ProductUpdateData } from "./ProductUpdate";
 import { api } from "../../services/api";
 
 const navigationItems = [
@@ -14,6 +15,7 @@ export default function ProductsList() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showStockModal, setShowStockModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [stockToAdd, setStockToAdd] = useState("");
   const [products, setProducts] = useState<any[]>([]);
@@ -85,6 +87,41 @@ export default function ProductsList() {
       } else {
         setError(error.response?.data?.detail || "Error al crear el producto");
       }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleUpdateProduct(formData: ProductUpdateData) {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No se encontró el token de autenticación");
+        navigate("/", { replace: true });
+        return;
+      }
+      const updateData = {
+        name: formData.name,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        activo: formData.activo,
+      };
+      const response = await api.put(`/products/${selectedProduct.id}`, updateData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Producto actualizado exitosamente:", response.data);
+      setShowUpdateModal(false);
+      alert("Producto actualizado exitosamente");
+      fetchProducts(currentPage);
+    } catch (error: any) {
+      console.error("Error al actualizar producto:", error);
+      setError("Error al actualizar el producto");
     } finally {
       setIsLoading(false);
     }
@@ -338,6 +375,10 @@ export default function ProductsList() {
 
                             <button
                               type="button"
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setShowUpdateModal(true);
+                              }}
                               className="rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
                             >
                               ✏️ Editar
@@ -463,6 +504,19 @@ export default function ProductsList() {
             </button>
           </div>
         </div>
+      )}
+
+      {showUpdateModal && selectedProduct && (
+        <ProductUpdate
+          product={selectedProduct}
+          onClose={() => {
+            setShowUpdateModal(false);
+            setSelectedProduct(null);
+          }}
+          onSubmit={handleUpdateProduct}
+          isLoading={isLoading}
+          error={error}
+        />
       )}
 
       {showLogoutModal ? (
