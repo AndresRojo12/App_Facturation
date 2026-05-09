@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [productsCount, setProductsCount] = useState(0);
   const [todayInvoicesCount, setTodayInvoicesCount] = useState(0);
+  const [todaySalesAmount, setTodaySalesAmount] = useState(0);
   const [allInvoicesCount, setAllInvoicesCount] = useState(0);
   const navigate = useNavigate();
 
@@ -65,10 +66,15 @@ export default function Dashboard() {
         },
       });
 
-      setTodayInvoicesCount(Array.isArray(response.data) ? response.data.length : 0);
+      const sales = Array.isArray(response.data) ? response.data : [];
+      setTodayInvoicesCount(sales.length);
+      setTodaySalesAmount(
+        sales.reduce((total: number, sale: any) => total + Number(sale.total || 0), 0),
+      );
     } catch (error: any) {
       console.error("Error al obtener facturas del día:", error);
       setTodayInvoicesCount(0);
+      setTodaySalesAmount(0);
     }
   };
 
@@ -104,7 +110,7 @@ export default function Dashboard() {
   const summaryCards = [
     {
       title: "Ventas del día",
-      value: "$1,250.00",
+      value: `$${todaySalesAmount.toFixed(2)}`,
       change: "+12.5% vs ayer",
       icon: "💵",
       bg: "bg-gradient-to-r from-cyan-500 to-blue-600",
@@ -227,6 +233,9 @@ export default function Dashboard() {
                   if (card.title === "Productos") {
                     navigate("/products");
                   }
+                  if (card.title === "Ventas del día") {
+                    navigate("/sales/daily");
+                  }
                   if (card.title === "Facturas del día") {
                     navigate("/invoices");
                   }
@@ -235,7 +244,7 @@ export default function Dashboard() {
                   }
                 }}
                 className={`rounded-3xl p-5 shadow-2xl shadow-slate-950/25 ${card.bg} transition ${
-                  card.title === "Productos" || card.title === "Facturas del día" || card.title === "Ver facturas"
+                  card.title === "Productos" || card.title === "Ventas del día" || card.title === "Facturas del día" || card.title === "Ver facturas"
                     ? "hover:shadow-2xl hover:scale-105 cursor-pointer"
                     : ""
                 }`}

@@ -72,8 +72,11 @@ async def get_sales(db: SessionDep):
 
 
 async def get_sales_today(db: SessionDep):
-    today_utc = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    tomorrow_utc = today_utc + timedelta(days=1)
+    local_now = datetime.now().astimezone()
+    today_local = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow_local = today_local + timedelta(days=1)
+    today_utc = today_local.astimezone(timezone.utc)
+    tomorrow_utc = tomorrow_local.astimezone(timezone.utc)
     return (
         db.query(Sale)
         .options(selectinload(Sale.details))
