@@ -7,9 +7,16 @@ from facturation.products.models.product_model import Product
 from facturation.products.schemas.product_schema import ProductCreate, ProductResponse
 
 # create function all get products from the database
-async def get_products(db: SessionDep) -> list[ProductResponse]:
-    products = db.query(Product).all()
-    return products
+async def get_products(db: SessionDep, offset: int = 0, limit: int = 10):
+    total = db.query(Product).count()
+    products = db.query(Product).offset(offset).limit(limit).all()
+    pages = (total + limit - 1) // limit  # ceil(total / limit)
+    return {
+        "products": products,
+        "total": total,
+        "page": (offset // limit) + 1,
+        "pages": pages
+    }
 
 # create function to create new product in the database
 

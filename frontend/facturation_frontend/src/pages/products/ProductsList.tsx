@@ -24,6 +24,9 @@ export default function ProductsList() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -69,6 +72,7 @@ export default function ProductsList() {
       // Aquí podrías actualizar la lista de productos si tienes estado para ello
       // Por ahora solo mostramos un mensaje de éxito
       alert("Producto creado exitosamente");
+      fetchProducts(currentPage);
     } catch (error: any) {
       console.error("Error al crear producto:", error);
 
@@ -109,7 +113,7 @@ export default function ProductsList() {
       setStockToAdd("");
       setSelectedProduct(null);
 
-      fetchProducts();
+      fetchProducts(currentPage);
     } catch (error: any) {
       console.error(error);
       alert("Error al actualizar stock");
@@ -117,21 +121,24 @@ export default function ProductsList() {
   }
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(1);
   }, []);
 
-  async function fetchProducts() {
+  async function fetchProducts(page = 1) {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await api.get("/products", {
+      const response = await api.get(`/products?offset=${(page - 1) * 10}&limit=10`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       console.log("Productos:", response.data);
-      setProducts(response.data);
+      setProducts(response.data.products);
+      setTotalPages(response.data.pages);
+      setTotalProducts(response.data.total);
+      setCurrentPage(response.data.page);
     } catch (error: any) {
       console.error("Error al obtener productos:", error);
     }
@@ -351,18 +358,22 @@ export default function ProductsList() {
                   ).length
                 }
               </span>{" "}
-              / {products.length}
+              / {totalProducts}
             </div>
             <div className="flex gap-3">
               <button
                 type="button"
-                className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700"
+                onClick={() => fetchProducts(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ← Anterior
               </button>
               <button
                 type="button"
-                className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700"
+                onClick={() => fetchProducts(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente →
               </button>

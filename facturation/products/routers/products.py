@@ -9,10 +9,12 @@ from facturation.users.schemas.user_schema import UserResponse
 router = APIRouter(prefix="/products", tags=["products"])
 
 # create routes http for products
+# agregar paginacion a la ruta de get products
 
-@router.get("/", response_model=list[ProductResponse])
-async def read_products(db: SessionDep, current_user: UserResponse = Depends(get_current_active_user)):
-    return await get_products(db)
+
+@router.get("/")
+async def read_products(db: SessionDep, current_user: UserResponse = Depends(get_current_active_user), offset: int = 0, limit: int = 10):
+    return await get_products(db, offset, limit)
 
 @router.post("/", response_model=ProductResponse)
 async def create_new_product(product: ProductCreate, db: SessionDep, current_user: UserResponse = Depends(get_current_active_user)):

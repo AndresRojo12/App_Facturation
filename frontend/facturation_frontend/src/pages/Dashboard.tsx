@@ -41,7 +41,7 @@ export default function Dashboard() {
         },
       });
 
-      setProductsCount(response.data.length);
+      setProductsCount(response.data.total);
     } catch (error: any) {
       console.error("Error al obtener productos:", error);
       // En caso de error, mantener el valor actual o mostrar 0
