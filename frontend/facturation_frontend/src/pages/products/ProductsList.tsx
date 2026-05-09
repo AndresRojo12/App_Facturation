@@ -8,10 +8,6 @@ const navigationItems = [
   { label: "Punto de Venta", active: false },
   { label: "Productos", active: true },
   { label: "Facturas", active: false },
-  { label: "Clientes", active: false },
-  { label: "Reportes", active: false },
-  { label: "Usuarios", active: false },
-  { label: "Configuración", active: false },
 ];
 
 export default function ProductsList() {
@@ -190,17 +186,11 @@ export default function ProductsList() {
                 key={item.label}
                 type="button"
                 onClick={() => {
-                  const routes: Record<string, string> = {
-                    Dashboard: "/dashboard",
-                    "Punto de Venta": "/sales",
-                    Productos: "/productos",
-                    Facturas: "/facturas",
-                    Clientes: "/clientes",
-                    Reportes: "/reportes",
-                    Usuarios: "/usuarios",
-                    Configuración: "/configuracion",
-                  };
-                  navigate(routes[item.label]);
+                  if (item.label === "Dashboard") 
+                    navigate("/dashboard");
+                  if (item.label === "Punto de Venta")
+                    navigate("/sales");
+                  if (item.label === "Facturas") navigate("/invoices/history");
                 }}
                 className={`flex w-full items-center justify-between rounded-3xl px-4 py-3 text-left text-sm transition ${
                   item.active

@@ -3,11 +3,41 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 
 const invoiceRows = [
-  { id: "F001-000018", client: "María López", date: "25/05/2024", total: "$120.00", status: "Pagada" },
-  { id: "F001-000017", client: "Carlos Pérez", date: "25/05/2024", total: "$85.50", status: "Pagada" },
-  { id: "F001-000016", client: "Ana Gómez", date: "25/05/2024", total: "$230.00", status: "Pagada" },
-  { id: "F001-000015", client: "Juan Martínez", date: "24/05/2024", total: "$75.00", status: "Cancelada" },
-  { id: "F001-000014", client: "Pedro Ruiz", date: "24/05/2024", total: "$150.00", status: "Pagada" },
+  {
+    id: "F001-000018",
+    client: "María López",
+    date: "25/05/2024",
+    total: "$120.00",
+    status: "Pagada",
+  },
+  {
+    id: "F001-000017",
+    client: "Carlos Pérez",
+    date: "25/05/2024",
+    total: "$85.50",
+    status: "Pagada",
+  },
+  {
+    id: "F001-000016",
+    client: "Ana Gómez",
+    date: "25/05/2024",
+    total: "$230.00",
+    status: "Pagada",
+  },
+  {
+    id: "F001-000015",
+    client: "Juan Martínez",
+    date: "24/05/2024",
+    total: "$75.00",
+    status: "Cancelada",
+  },
+  {
+    id: "F001-000014",
+    client: "Pedro Ruiz",
+    date: "24/05/2024",
+    total: "$150.00",
+    status: "Pagada",
+  },
 ];
 
 const navigationItems = [
@@ -15,10 +45,6 @@ const navigationItems = [
   { label: "Punto de Venta", active: false },
   { label: "Productos", active: false },
   { label: "Facturas", active: false },
-  { label: "Clientes", active: false },
-  { label: "Reportes", active: false },
-  { label: "Usuarios", active: false },
-  { label: "Configuración", active: false },
 ];
 
 export default function Dashboard() {
@@ -70,7 +96,10 @@ export default function Dashboard() {
       const sales = Array.isArray(response.data) ? response.data : [];
       setTodayInvoicesCount(sales.length);
       setTodaySalesAmount(
-        sales.reduce((total: number, sale: any) => total + Number(sale.total || 0), 0),
+        sales.reduce(
+          (total: number, sale: any) => total + Number(sale.total || 0),
+          0,
+        ),
       );
     } catch (error: any) {
       console.error("Error al obtener facturas del día:", error);
@@ -93,7 +122,9 @@ export default function Dashboard() {
         },
       });
 
-      setAllInvoicesCount(Array.isArray(response.data) ? response.data.length : 0);
+      setAllInvoicesCount(
+        Array.isArray(response.data) ? response.data.length : 0,
+      );
     } catch (error: any) {
       console.error("Error al obtener el historial de facturas:", error);
       setAllInvoicesCount(0);
@@ -117,7 +148,10 @@ export default function Dashboard() {
 
       console.log("DEBUG: Respuesta del endpoint:", response.data);
       setLast7DaysSales(Array.isArray(response.data) ? response.data : []);
-      console.log("DEBUG: Estado last7DaysSales actualizado:", Array.isArray(response.data) ? response.data : []);
+      console.log(
+        "DEBUG: Estado last7DaysSales actualizado:",
+        Array.isArray(response.data) ? response.data : [],
+      );
     } catch (error: any) {
       console.error("Error al obtener ventas de últimos 7 días:", error);
       setLast7DaysSales([]);
@@ -187,8 +221,12 @@ export default function Dashboard() {
               💼
             </div>
             <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Facturación</p>
-              <h2 className="text-lg font-semibold text-white">Facturación Pro</h2>
+              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">
+                Facturación
+              </p>
+              <h2 className="text-lg font-semibold text-white">
+                Facturación Pro
+              </h2>
             </div>
           </div>
 
@@ -226,10 +264,15 @@ export default function Dashboard() {
         <main className="px-4 py-6 sm:px-6 lg:px-8">
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">Dashboard</p>
-              <h1 className="mt-3 text-3xl font-semibold text-white">Hola, Administrador</h1>
+              <p className="text-sm uppercase tracking-[0.3em] text-cyan-300/80">
+                Dashboard
+              </p>
+              <h1 className="mt-3 text-3xl font-semibold text-white">
+                Hola, Administrador
+              </h1>
               <p className="mt-2 max-w-2xl text-slate-400">
-                Revisa tus métricas clave y administra productos, facturas y clientes desde aquí.
+                Revisa tus métricas clave y administra productos, facturas y
+                clientes desde aquí.
               </p>
             </div>
             <div className="flex items-center gap-3 rounded-3xl border border-slate-800/80 bg-slate-900/70 px-4 py-3 shadow-xl shadow-slate-950/20">
@@ -263,15 +306,22 @@ export default function Dashboard() {
                   }
                 }}
                 className={`rounded-3xl p-5 shadow-2xl shadow-slate-950/25 ${card.bg} transition ${
-                  card.title === "Productos" || card.title === "Ventas del día" || card.title === "Facturas del día" || card.title === "Ver facturas"
+                  card.title === "Productos" ||
+                  card.title === "Ventas del día" ||
+                  card.title === "Facturas del día" ||
+                  card.title === "Ver facturas"
                     ? "hover:shadow-2xl hover:scale-105 cursor-pointer"
                     : ""
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-left">
-                    <p className="text-sm font-medium text-slate-200/90">{card.title}</p>
-                    <p className="mt-4 text-3xl font-semibold text-white">{card.value}</p>
+                    <p className="text-sm font-medium text-slate-200/90">
+                      {card.title}
+                    </p>
+                    <p className="mt-4 text-3xl font-semibold text-white">
+                      {card.value}
+                    </p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-2xl">
                     {card.icon}
@@ -286,8 +336,12 @@ export default function Dashboard() {
             <section className="rounded-[2rem] border border-slate-800/70 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/20 backdrop-blur-xl">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-white">Ventas últimos 7 días</h2>
-                  <p className="mt-1 text-sm text-slate-400">Resumen de ingresos y crecimiento reciente.</p>
+                  <h2 className="text-xl font-semibold text-white">
+                    Ventas últimos 7 días
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Resumen de ingresos y crecimiento reciente.
+                  </p>
                 </div>
                 <div className="rounded-3xl bg-slate-950/80 px-4 py-2 text-sm text-slate-300">
                   Gráfico rápido
@@ -295,114 +349,127 @@ export default function Dashboard() {
               </div>
 
               <div className="mt-6 space-y-4">
-                <div className="overflow-hidden rounded-[2rem] bg-slate-950/90 p-4">
+                <div className="overflow-hidden rounded-[2rem] bg-slate-950/900 p-4">
                   {last7DaysSales.length > 0 ? (
                     <>
                       <div className="relative h-72 overflow-hidden rounded-[2rem] bg-gradient-to-b from-cyan-500/10 via-slate-950/10 to-slate-950/0 p-4">
                         <div className="absolute inset-x-0 bottom-0 h-2 bg-gradient-to-r from-cyan-400 to-violet-500 opacity-40" />
-                        <svg viewBox="0 0 700 250" className="h-full w-full" preserveAspectRatio="none">
+                        <svg
+                          viewBox="0 0 700 250"
+                          className="h-full w-full"
+                          preserveAspectRatio="none"
+                        >
                           <defs>
-                            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <linearGradient
+                              id="lineGradient"
+                              x1="0%"
+                              y1="0%"
+                              x2="100%"
+                              y2="0%"
+                            >
                               <stop offset="0%" stopColor="#22d3ee" />
                               <stop offset="100%" stopColor="#a855f7" />
                             </linearGradient>
-                            <linearGradient id="fillGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" stopColor="rgba(34,211,238,0.3)" />
+                            <linearGradient
+                              id="fillGradient"
+                              x1="0%"
+                              y1="0%"
+                              x2="0%"
+                              y2="100%"
+                            >
+                              <stop
+                                offset="0%"
+                                stopColor="rgba(34,211,238,0.3)"
+                              />
                               <stop offset="100%" stopColor="transparent" />
                             </linearGradient>
                           </defs>
                           {(() => {
-                            const maxAmount = Math.max(...last7DaysSales.map(d => d.total_amount), 1);
+                            const maxAmount = Math.max(
+                              ...last7DaysSales.map((d) => d.total_amount),
+                              1,
+                            );
                             const points = last7DaysSales.map((day, i) => ({
-                              x: (i / (last7DaysSales.length - 1 || 1)) * 680 + 10,
+                              x:
+                                (i / (last7DaysSales.length - 1 || 1)) * 680 +
+                                10,
                               y: 230 - (day.total_amount / maxAmount) * 200,
                               amount: day.total_amount,
                               products: day.total_products,
                             }));
-                            
+
                             const pathData = points
-                              .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
-                              .join(' ');
-                            
+                              .map(
+                                (p, i) =>
+                                  `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`,
+                              )
+                              .join(" ");
+
                             const fillPath = `${pathData} L ${points[points.length - 1]?.x} 230 L 10 230 Z`;
-                            
+
                             return (
                               <>
-                                <path d={fillPath} fill="url(#fillGradient)" opacity="0.7" />
-                                <path d={pathData} fill="none" stroke="url(#lineGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                                <path
+                                  d={fillPath}
+                                  fill="url(#fillGradient)"
+                                  opacity="0.7"
+                                />
+                                <path
+                                  d={pathData}
+                                  fill="none"
+                                  stroke="url(#lineGradient)"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
                                 {points.map((p, i) => (
-                                  <circle key={i} cx={p.x} cy={p.y} r="5" fill="#38bdf8" stroke="#fff" strokeWidth="2" />
+                                  <circle
+                                    key={i}
+                                    cx={p.x}
+                                    cy={p.y}
+                                    r="5"
+                                    fill="#38bdf8"
+                                    stroke="#fff"
+                                    strokeWidth="2"
+                                  />
                                 ))}
                               </>
                             );
                           })()}
                         </svg>
                       </div>
-                      
+
                       <div className="mt-6 grid grid-cols-7 gap-2">
                         {last7DaysSales.map((day, i) => (
-                          <div key={i} className="rounded-lg border border-slate-700/60 bg-slate-950/50 p-3 text-center">
-                            <p className="text-xs text-slate-400 uppercase">{day.day_short}</p>
-                            <p className="mt-1 text-sm font-semibold text-cyan-300">${day.total_amount.toFixed(0)}</p>
-                            <p className="mt-1 text-xs text-slate-500">{day.total_products} productos</p>
-                            <p className="text-xs text-slate-600">{day.sales_count} venta{day.sales_count !== 1 ? 's' : ''}</p>
+                          <div
+                            key={i}
+                            className="rounded-lg border border-slate-700/60 bg-slate-950/50 p-3 text-center"
+                          >
+                            <p className="text-xs text-slate-400 uppercase">
+                              {day.day_short}
+                            </p>
+                            <p className="mt-1 text-sm font-semibold text-cyan-300">
+                              ${day.total_amount.toFixed(0)}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {day.total_products} productos
+                            </p>
+                            <p className="text-xs text-slate-600">
+                              {day.sales_count} venta
+                              {day.sales_count !== 1 ? "s" : ""}
+                            </p>
                           </div>
                         ))}
                       </div>
                     </>
                   ) : (
                     <div className="flex items-center justify-center py-16">
-                      <p className="text-slate-400">Sin datos de ventas en los últimos 7 días</p>
+                      <p className="text-slate-400">
+                        Sin datos de ventas en los últimos 7 días
+                      </p>
                     </div>
                   )}
                 </div>
-              </div>
-            </section>
-
-            <section className="rounded-[2rem] border border-slate-800/70 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/20 backdrop-blur-xl">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-semibold text-white">Últimas facturas</h2>
-                  <p className="mt-1 text-sm text-slate-400">Las facturas más recientes del sistema.</p>
-                </div>
-                <button className="rounded-full bg-slate-800/80 px-4 py-2 text-sm text-white transition hover:bg-slate-700/90">
-                  Ver todas
-                </button>
-              </div>
-
-              <div className="mt-6 overflow-hidden rounded-[2rem] border border-slate-800/60 bg-slate-950/80">
-                <table className="min-w-full text-left text-sm text-slate-200">
-                  <thead className="bg-slate-950/90 text-slate-400">
-                    <tr>
-                      <th className="px-4 py-4 uppercase tracking-[0.2em]">N° Factura</th>
-                      <th className="px-4 py-4 uppercase tracking-[0.2em]">Cliente</th>
-                      <th className="px-4 py-4 uppercase tracking-[0.2em]">Fecha</th>
-                      <th className="px-4 py-4 uppercase tracking-[0.2em]">Total</th>
-                      <th className="px-4 py-4 uppercase tracking-[0.2em]">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/70 bg-slate-950">
-                    {invoiceRows.map((invoice) => (
-                      <tr key={invoice.id} className="transition hover:bg-slate-900/90">
-                        <td className="px-4 py-4 font-medium text-white">{invoice.id}</td>
-                        <td className="px-4 py-4">{invoice.client}</td>
-                        <td className="px-4 py-4">{invoice.date}</td>
-                        <td className="px-4 py-4 text-cyan-300">{invoice.total}</td>
-                        <td className="px-4 py-4">
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            invoice.status === "Pagada"
-                              ? "bg-emerald-500/10 text-emerald-300"
-                              : invoice.status === "Pendiente"
-                              ? "bg-amber-500/10 text-amber-300"
-                              : "bg-rose-500/10 text-rose-300"
-                          }`}>
-                            {invoice.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             </section>
           </div>
@@ -414,9 +481,12 @@ export default function Dashboard() {
           <div className="w-full max-w-md rounded-[2rem] border border-slate-700/80 bg-slate-900 p-6 shadow-2xl shadow-slate-950/60">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-semibold text-white">Cerrar sesión</h3>
+                <h3 className="text-2xl font-semibold text-white">
+                  Cerrar sesión
+                </h3>
                 <p className="mt-2 text-sm text-slate-400">
-                  ¿Seguro que deseas cerrar sesión? Puedes volver a iniciar sesión cuando quieras.
+                  ¿Seguro que deseas cerrar sesión? Puedes volver a iniciar
+                  sesión cuando quieras.
                 </p>
               </div>
               <button
@@ -443,7 +513,6 @@ export default function Dashboard() {
               >
                 Seguir en la app
               </button>
-              
             </div>
           </div>
         </div>
@@ -451,4 +520,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
