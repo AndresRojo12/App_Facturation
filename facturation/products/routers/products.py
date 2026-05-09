@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from alembic.util import status
 from facturation.database.dependencies.dependencie_session import SessionDep
 from facturation.products.schemas.product_schema import ProductCreate, ProductResponse
-from facturation.products.services.product_service import create_product, get_product, get_products, add_stock, update_product
+from facturation.products.services.product_service import create_product, get_product, get_products, add_stock, update_product, delete_product
 from facturation.users.login.user_login import get_current_active_user
 from facturation.users.schemas.user_schema import UserResponse
 
@@ -32,3 +32,11 @@ async def update_products(product_id: int, product: ProductCreate, db: SessionDe
 @router.get("/{product_id}", response_model=ProductResponse)
 async def read_product(product_id: int, db: SessionDep, current_user: UserResponse = Depends(get_current_active_user)):
     return await get_product(product_id, db)
+
+@router.delete("/{product_id}")
+async def delete_products(product_id: int, db: SessionDep, current_user: UserResponse = Depends(get_current_active_user)):
+    product = await get_product(product_id, db)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    await delete_product(product_id, db)
+    return {"detail": "Product deleted successfully"}

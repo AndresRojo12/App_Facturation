@@ -69,3 +69,13 @@ async def update_product(product_id: int, product: ProductCreate, db: SessionDep
     db.commit()
     db.refresh(existing_product)
     return existing_product
+
+# create function to delete product in the database de forma logica, es decir, solo cambiar el estado a inactivo
+async def delete_product(product_id: int, db: SessionDep) -> ProductResponse:
+    existing_product = await get_product(product_id, db)
+    existing_product.activo = False
+
+    db.add(existing_product)
+    db.commit()
+    db.refresh(existing_product)
+    return existing_product
