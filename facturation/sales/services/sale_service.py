@@ -1,6 +1,8 @@
 # create new sale in the database
 
+from datetime import datetime, timedelta, timezone
 from starlette.exceptions import HTTPException
+from sqlalchemy.orm import selectinload
 from facturation.database.dependencies.dependencie_session import SessionDep
 from facturation.sales.models.sale_details_model import SaleDetail
 from facturation.sales.models.sale_model import Sale
@@ -58,3 +60,24 @@ async def create_sale(sale: SaleCreate, db: SessionDep, current_user):
     db.commit()
     db.refresh(new_sale)
     return new_sale
+
+
+async def get_sales(db: SessionDep):
+    return (
+        db.query(Sale)
+        .options(selectinload(Sale.details))
+        .order_by(Sale.created_at.desc())
+        .all()
+    )
+
+
+async def get_sales_today(db: SessionDep):
+    today_utc = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow_utc = today_utc + timedelta(days=1)
+    return (
+        db.query(Sale)
+        .options(selectinload(Sale.details))
+        .filter(Sale.created_at >= today_utc, Sale.created_at < tomorrow_utc)
+        .order_by(Sale.created_at.desc())
+        .all()
+    )

@@ -24,6 +24,8 @@ const navigationItems = [
 export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [productsCount, setProductsCount] = useState(0);
+  const [todayInvoicesCount, setTodayInvoicesCount] = useState(0);
+  const [allInvoicesCount, setAllInvoicesCount] = useState(0);
   const navigate = useNavigate();
 
   // Función para obtener la cantidad de productos
@@ -44,14 +46,58 @@ export default function Dashboard() {
       setProductsCount(response.data.total);
     } catch (error: any) {
       console.error("Error al obtener productos:", error);
-      // En caso de error, mantener el valor actual o mostrar 0
       setProductsCount(0);
     }
   };
 
-  // Cargar la cantidad de productos al montar el componente
+  const fetchTodayInvoicesCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No se encontró el token de autenticación");
+        return;
+      }
+
+      const response = await api.get("/sales", {
+        params: { today: true },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setTodayInvoicesCount(Array.isArray(response.data) ? response.data.length : 0);
+    } catch (error: any) {
+      console.error("Error al obtener facturas del día:", error);
+      setTodayInvoicesCount(0);
+    }
+  };
+
+  const fetchAllInvoicesCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No se encontró el token de autenticación");
+        return;
+      }
+
+      const response = await api.get("/sales", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setAllInvoicesCount(Array.isArray(response.data) ? response.data.length : 0);
+    } catch (error: any) {
+      console.error("Error al obtener el historial de facturas:", error);
+      setAllInvoicesCount(0);
+    }
+  };
+
+  // Cargar la cantidad de productos y facturas al montar el componente
   useEffect(() => {
     fetchProductsCount();
+    fetchTodayInvoicesCount();
+    fetchAllInvoicesCount();
   }, []);
 
   // Tarjetas de resumen con datos dinámicos
@@ -65,10 +111,17 @@ export default function Dashboard() {
     },
     {
       title: "Facturas del día",
-      value: 18,
+      value: todayInvoicesCount,
       change: "+8.3% vs ayer",
       icon: "🧾",
       bg: "bg-gradient-to-r from-violet-500 to-purple-600",
+    },
+    {
+      title: "Ver facturas",
+      value: allInvoicesCount,
+      change: "Historial completo",
+      icon: "📜",
+      bg: "bg-gradient-to-r from-yellow-500 to-orange-600",
     },
     {
       title: "Productos",
@@ -121,6 +174,8 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => {
                   if (item.label === "Productos") navigate("/products");
+                  if (item.label === "Facturas") navigate("/invoices/history");
+                  if (item.label === "Punto de Venta") navigate("/sales");
                 }}
                 className={`flex w-full items-center justify-between rounded-3xl px-4 py-3 text-left text-sm transition ${
                   item.active
@@ -172,10 +227,16 @@ export default function Dashboard() {
                   if (card.title === "Productos") {
                     navigate("/products");
                   }
+                  if (card.title === "Facturas del día") {
+                    navigate("/invoices");
+                  }
+                  if (card.title === "Ver facturas") {
+                    navigate("/invoices/history");
+                  }
                 }}
                 className={`rounded-3xl p-5 shadow-2xl shadow-slate-950/25 ${card.bg} transition ${
-                  card.title === "Productos" 
-                    ? "hover:shadow-2xl hover:shadow-teal-500/40 hover:scale-105 cursor-pointer"
+                  card.title === "Productos" || card.title === "Facturas del día" || card.title === "Ver facturas"
+                    ? "hover:shadow-2xl hover:scale-105 cursor-pointer"
                     : ""
                 }`}
               >

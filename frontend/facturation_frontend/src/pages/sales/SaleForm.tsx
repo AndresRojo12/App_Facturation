@@ -64,10 +64,11 @@ export function SaleForm() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setProducts(response.data);
+      setProducts(Array.isArray(response.data?.products) ? response.data.products : []);
     } catch (error) {
       console.error("Error al obtener productos:", error);
       showAlert("error", "Error al cargar los productos");
+      setProducts([]);
     } finally {
       setLoading(false);
     }

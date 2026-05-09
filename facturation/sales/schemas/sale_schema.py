@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 from fastapi import FastAPI, Depends
 from pydantic import BaseModel
@@ -13,6 +14,7 @@ class SaleCreate(BaseModel):
 class SaleResponse(BaseModel):
     id: int
     total: float
+    created_at: datetime
     details: list[SaleDetailResponse]
 
     class Config:
