@@ -87,16 +87,6 @@ function AuthLayout() {
               INICIAR SESIÓN
             </button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-600">
-            ¿No tienes una cuenta?
-            <a
-              href="#"
-              className="text-indigo-600 hover:text-indigo-500 font-medium"
-            >
-              Registrarme
-            </a>
-          </div>
         </div>
       </div>
     </>
