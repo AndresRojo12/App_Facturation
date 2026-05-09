@@ -1,7 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, Depends
-from facturation.sales.services.sale_service import create_sale, get_sales, get_sales_today
+from facturation.sales.services.sale_service import create_sale, get_sales, get_sales_today, get_sales_last_7_days
 from facturation.users.login.user_login import get_current_active_user
 from facturation.database.dependencies.dependencie_session import SessionDep, get_session
 from facturation.sales.schemas.sale_schema import SaleCreate, SaleResponse
@@ -17,6 +17,13 @@ async def read_sales(
     if today:
         return await get_sales_today(db)
     return await get_sales(db)
+
+@router.get("/analytics/last-7-days")
+async def read_sales_last_7_days(
+    db: SessionDep,
+    current_user = Depends(get_current_active_user),
+):
+    return await get_sales_last_7_days(db)
 
 @router.post("/", response_model=SaleResponse)
 async def create_new_sale(

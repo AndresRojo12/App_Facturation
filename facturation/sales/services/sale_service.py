@@ -84,3 +84,69 @@ async def get_sales_today(db: SessionDep):
         .order_by(Sale.created_at.desc())
         .all()
     )
+
+
+async def get_sales_last_7_days(db: SessionDep):
+    # Primero verificar todas las ventas en la BD
+    all_sales = db.query(Sale).all()
+    #print(f"DEBUG: Total de ventas en BD: {len(all_sales)}")
+    for sale in all_sales:
+        #print(f"DEBUG: Venta {sale.id} - Fecha: {sale.created_at} - Fecha local: {sale.created_at.astimezone()}")
+        pass
+    
+    # Obtener la fecha actual en zona horaria local
+    now = datetime.now().astimezone()
+    
+    # Calcular el rango: desde hace 7 días hasta ahora
+    seven_days_ago = now - timedelta(days=7)
+    
+    #print(f"DEBUG: Fecha actual local: {now}")
+    #print(f"DEBUG: Hace 7 días: {seven_days_ago}")
+    
+    # Convertir a UTC para la consulta en BD
+    seven_days_ago_utc = seven_days_ago.astimezone(timezone.utc)
+    now_utc = now.astimezone(timezone.utc)
+    
+    #print(f"DEBUG: Hace 7 días UTC: {seven_days_ago_utc}")
+    #print(f"DEBUG: Ahora UTC: {now_utc}")
+    
+    sales = (
+        db.query(Sale)
+        .options(selectinload(Sale.details))
+        .filter(Sale.created_at >= seven_days_ago_utc, Sale.created_at <= now_utc)
+        .order_by(Sale.created_at.asc())
+        .all()
+    )
+    
+    #print(f"DEBUG: Ventas encontradas en rango de 7 días: {len(sales)}")
+    for sale in sales:
+        #print(f"DEBUG: Venta {sale.id} - Fecha: {sale.created_at} - Total: {sale.total}")
+        pass
+
+    # Crear estructura de 7 días
+    daily_data = {}
+    for i in range(7):
+        day = (now.date() - timedelta(days=6-i)).strftime('%Y-%m-%d')
+        day_date = datetime.strptime(day, '%Y-%m-%d').date()
+        daily_data[day] = {
+            "date": day,
+            "day_name": day_date.strftime("%A"),
+            "day_short": day_date.strftime("%a"),
+            "total_sales": 0,
+            "total_amount": 0,
+            "total_products": 0,
+            "sales_count": 0,
+        }
+    
+    # Llenar datos
+    for sale in sales:
+        sale_date = sale.created_at.astimezone().strftime('%Y-%m-%d')
+        
+        if sale_date in daily_data:
+            daily_data[sale_date]["total_amount"] += sale.total
+            daily_data[sale_date]["sales_count"] += 1
+            daily_data[sale_date]["total_products"] += sum(detail.quantity for detail in sale.details)
+    
+    result = list(daily_data.values())
+    #print(f"DEBUG: Resultado final: {result}")
+    return result

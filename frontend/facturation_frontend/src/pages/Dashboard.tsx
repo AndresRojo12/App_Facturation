@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [todayInvoicesCount, setTodayInvoicesCount] = useState(0);
   const [todaySalesAmount, setTodaySalesAmount] = useState(0);
   const [allInvoicesCount, setAllInvoicesCount] = useState(0);
+  const [last7DaysSales, setLast7DaysSales] = useState<any[]>([]);
   const navigate = useNavigate();
 
   // Función para obtener la cantidad de productos
@@ -99,11 +100,36 @@ export default function Dashboard() {
     }
   };
 
+  const fetchLast7DaysSales = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No se encontró el token de autenticación");
+        return;
+      }
+
+      console.log("DEBUG: Llamando a /sales/analytics/last-7-days");
+      const response = await api.get("/sales/analytics/last-7-days", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("DEBUG: Respuesta del endpoint:", response.data);
+      setLast7DaysSales(Array.isArray(response.data) ? response.data : []);
+      console.log("DEBUG: Estado last7DaysSales actualizado:", Array.isArray(response.data) ? response.data : []);
+    } catch (error: any) {
+      console.error("Error al obtener ventas de últimos 7 días:", error);
+      setLast7DaysSales([]);
+    }
+  };
+
   // Cargar la cantidad de productos y facturas al montar el componente
   useEffect(() => {
     fetchProductsCount();
     fetchTodayInvoicesCount();
     fetchAllInvoicesCount();
+    fetchLast7DaysSales();
   }, []);
 
   // Tarjetas de resumen con datos dinámicos
@@ -135,13 +161,6 @@ export default function Dashboard() {
       change: "En inventario",
       icon: "📦",
       bg: "bg-gradient-to-r from-emerald-500 to-teal-600",
-    },
-    {
-      title: "Clientes",
-      value: 156,
-      change: "Registrados",
-      icon: "👥",
-      bg: "bg-gradient-to-r from-orange-500 to-rose-600",
     },
   ];
 
@@ -275,26 +294,67 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="mt-6 overflow-hidden rounded-[2rem] bg-slate-950/90 p-4">
-                <div className="relative h-72 overflow-hidden rounded-[2rem] bg-gradient-to-b from-cyan-500/10 via-slate-950/10 to-slate-950/0 p-4">
-                  <div className="absolute inset-x-0 bottom-0 h-2 bg-gradient-to-r from-cyan-400 to-violet-500 opacity-40" />
-                  <svg viewBox="0 0 300 200" className="h-full w-full">
-                    <defs>
-                      <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#22d3ee" />
-                        <stop offset="100%" stopColor="#a855f7" />
-                      </linearGradient>
-                      <linearGradient id="fillGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="rgba(34,211,238,0.3)" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M 10 150 C 65 130 110 100 150 115 C 190 130 230 95 290 70" fill="none" stroke="url(#lineGradient)" strokeWidth="4" strokeLinecap="round" />
-                    <path d="M 10 150 C 65 130 110 100 150 115 C 190 130 230 95 290 70 L 290 180 L 10 180 Z" fill="url(#fillGradient)" opacity="0.7" />
-                    {[10, 65, 110, 150, 190, 230, 290].map((x, index) => (
-                      <circle key={index} cx={x} cy={[150, 130, 100, 115, 130, 95, 70][index]} r="6" fill="#38bdf8" stroke="#fff" strokeWidth="2" />
-                    ))}
-                  </svg>
+              <div className="mt-6 space-y-4">
+                <div className="overflow-hidden rounded-[2rem] bg-slate-950/90 p-4">
+                  {last7DaysSales.length > 0 ? (
+                    <>
+                      <div className="relative h-72 overflow-hidden rounded-[2rem] bg-gradient-to-b from-cyan-500/10 via-slate-950/10 to-slate-950/0 p-4">
+                        <div className="absolute inset-x-0 bottom-0 h-2 bg-gradient-to-r from-cyan-400 to-violet-500 opacity-40" />
+                        <svg viewBox="0 0 700 250" className="h-full w-full" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#22d3ee" />
+                              <stop offset="100%" stopColor="#a855f7" />
+                            </linearGradient>
+                            <linearGradient id="fillGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="rgba(34,211,238,0.3)" />
+                              <stop offset="100%" stopColor="transparent" />
+                            </linearGradient>
+                          </defs>
+                          {(() => {
+                            const maxAmount = Math.max(...last7DaysSales.map(d => d.total_amount), 1);
+                            const points = last7DaysSales.map((day, i) => ({
+                              x: (i / (last7DaysSales.length - 1 || 1)) * 680 + 10,
+                              y: 230 - (day.total_amount / maxAmount) * 200,
+                              amount: day.total_amount,
+                              products: day.total_products,
+                            }));
+                            
+                            const pathData = points
+                              .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+                              .join(' ');
+                            
+                            const fillPath = `${pathData} L ${points[points.length - 1]?.x} 230 L 10 230 Z`;
+                            
+                            return (
+                              <>
+                                <path d={fillPath} fill="url(#fillGradient)" opacity="0.7" />
+                                <path d={pathData} fill="none" stroke="url(#lineGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                                {points.map((p, i) => (
+                                  <circle key={i} cx={p.x} cy={p.y} r="5" fill="#38bdf8" stroke="#fff" strokeWidth="2" />
+                                ))}
+                              </>
+                            );
+                          })()}
+                        </svg>
+                      </div>
+                      
+                      <div className="mt-6 grid grid-cols-7 gap-2">
+                        {last7DaysSales.map((day, i) => (
+                          <div key={i} className="rounded-lg border border-slate-700/60 bg-slate-950/50 p-3 text-center">
+                            <p className="text-xs text-slate-400 uppercase">{day.day_short}</p>
+                            <p className="mt-1 text-sm font-semibold text-cyan-300">${day.total_amount.toFixed(0)}</p>
+                            <p className="mt-1 text-xs text-slate-500">{day.total_products} productos</p>
+                            <p className="text-xs text-slate-600">{day.sales_count} venta{day.sales_count !== 1 ? 's' : ''}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center py-16">
+                      <p className="text-slate-400">Sin datos de ventas en los últimos 7 días</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
