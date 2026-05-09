@@ -56,3 +56,16 @@ async def add_stock(product_id: int, quantity: int, db: SessionDep) -> ProductRe
     db.commit()
     db.refresh(product)
     return product
+
+# create function to update product in the database
+async def update_product(product_id: int, product: ProductCreate, db: SessionDep) -> ProductResponse:
+    existing_product = await get_product(product_id, db)
+    existing_product.name = product.name
+    existing_product.price = product.price
+    existing_product.stock = product.stock
+    existing_product.activo = product.stock > 0
+
+    db.add(existing_product)
+    db.commit()
+    db.refresh(existing_product)
+    return existing_product

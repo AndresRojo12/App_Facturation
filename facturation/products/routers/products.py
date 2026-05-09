@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from alembic.util import status
 from facturation.database.dependencies.dependencie_session import SessionDep
 from facturation.products.schemas.product_schema import ProductCreate, ProductResponse
-from facturation.products.services.product_service import create_product, get_product, get_products, add_stock
+from facturation.products.services.product_service import create_product, get_product, get_products, add_stock, update_product
 from facturation.users.login.user_login import get_current_active_user
 from facturation.users.schemas.user_schema import UserResponse
 
@@ -24,3 +24,11 @@ async def create_new_product(product: ProductCreate, db: SessionDep, current_use
 async def update_stock(product_id: int, quantity:int, db: SessionDep, current_user: UserResponse = Depends(get_current_active_user)):
     
     return await add_stock(product_id, quantity, db)
+
+@router.put("/{product_id}", response_model=ProductResponse)
+async def update_products(product_id: int, product: ProductCreate, db: SessionDep, current_user: UserResponse = Depends(get_current_active_user)):
+    return await update_product(product_id, product, db)
+
+@router.get("/{product_id}", response_model=ProductResponse)
+async def read_product(product_id: int, db: SessionDep, current_user: UserResponse = Depends(get_current_active_user)):
+    return await get_product(product_id, db)
