@@ -64,7 +64,7 @@ export function SaleForm() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setProducts(Array.isArray(response.data?.products) ? response.data.products : []);
+      setProducts(Array.isArray(response.data?.products) ? response.data.products.filter(p => p.activo) : []);
     } catch (error) {
       console.error("Error al obtener productos:", error);
       showAlert("error", "Error al cargar los productos");

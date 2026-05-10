@@ -127,6 +127,39 @@ export default function ProductsList() {
     }
   }
 
+  // create function for deleting product
+  async function handleDeleteProduct(product: any) {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No se encontró el token de autenticación");
+        navigate("/", { replace: true });
+        return;
+      }
+
+      await api.delete(`/products/${product.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Producto eliminado exitosamente");
+      alert("Producto eliminado exitosamente");
+      setSelectedProduct(null);
+      fetchProducts(currentPage);
+      if (searchTerm.trim() !== "") {
+        fetchAllProducts();
+      }
+    } catch (error: any) {
+      console.error("Error al eliminar producto:", error);
+      setError("Error al eliminar el producto");
+    }
+  }
+
   async function handleAddStock() {
     try {
       const token = localStorage.getItem("token");
@@ -169,7 +202,7 @@ export default function ProductsList() {
       });
 
       console.log("Productos:", response.data);
-      setProducts(response.data.products);
+      setProducts(response.data.products.filter((p: any) => p.activo));
       setTotalPages(response.data.pages);
       setTotalProducts(response.data.total);
       setCurrentPage(response.data.page);
@@ -186,7 +219,7 @@ export default function ProductsList() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setAllProducts(response.data.products);
+      setAllProducts(response.data.products.filter((p: any) => p.activo));
     } catch (error: any) {
       console.error("Error al obtener todos los productos:", error);
       setAllProducts([]);
@@ -386,6 +419,7 @@ export default function ProductsList() {
 
                             <button
                               type="button"
+                              onClick={() => handleDeleteProduct(product)}
                               className="rounded-lg bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition hover:bg-rose-500/20"
                             >
                               🗑️ Eliminar
