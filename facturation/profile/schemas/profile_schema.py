@@ -4,15 +4,15 @@ from pydantic import BaseModel
 
 class ProfileCreate(BaseModel):
     full_name: str
-    phone: Optional[int] = None
-    document: Optional[int] = None
+    phone: Optional[str] = None
+    document: Optional[str] = None
 
 class ProfileResponse(BaseModel):
     id: int
     user_id: int
     full_name: str
-    phone: Optional[int] = None
-    document: Optional[int] = None
+    phone: Optional[str] = None
+    document: Optional[str] = None
 
     class Config:
         from_attributes = True    
