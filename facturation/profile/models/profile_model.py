@@ -1,16 +1,18 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from facturation.database.base import Base
 
-class User(Base):
-    __tablename__ = "users"
+class Profile(Base):
+    __tablename__ = "profiles"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, nullable=False)
-    password = Column(String, unique=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    full_name = Column(String, nullable=False)
+    phone = Column(Integer, nullable=False)
+    document = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
-    profile = relationship("Profile", back_populates="user", uselist=False) 
+    user = relationship("User", back_populates="profile")

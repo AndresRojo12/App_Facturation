@@ -201,7 +201,6 @@ export default function ProductsList() {
         },
       });
 
-      console.log("Productos:", response.data);
       setProducts(response.data.products.filter((p: any) => p.activo));
       setTotalPages(response.data.pages);
       setTotalProducts(response.data.total);
