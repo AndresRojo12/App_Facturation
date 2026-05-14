@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from facturation.database.dependencies.dependencie_session import SessionDep
 from facturation.sales.models.sale_details_model import SaleDetail
 from facturation.sales.models.sale_model import Sale
+from facturation.users.models.user_model import User
 from facturation.sales.schemas.sale_schema import SaleCreate, SaleResponse
 from facturation.sales.schemas.sale_detail_schema import SaleDetailResponse
 from facturation.products.services.product_service import get_product
@@ -65,7 +66,10 @@ async def create_sale(sale: SaleCreate, db: SessionDep, current_user):
 async def get_sales(db: SessionDep):
     return (
         db.query(Sale)
-        .options(selectinload(Sale.details))
+        .options(
+            selectinload(Sale.details).selectinload(SaleDetail.product),
+            selectinload(Sale.user).selectinload(User.profile),
+        )
         .order_by(Sale.created_at.desc())
         .all()
     )
@@ -79,7 +83,10 @@ async def get_sales_today(db: SessionDep):
     tomorrow_utc = tomorrow_local.astimezone(timezone.utc)
     return (
         db.query(Sale)
-        .options(selectinload(Sale.details))
+        .options(
+            selectinload(Sale.details).selectinload(SaleDetail.product),
+            selectinload(Sale.user).selectinload(User.profile),
+        )
         .filter(Sale.created_at >= today_utc, Sale.created_at < tomorrow_utc)
         .order_by(Sale.created_at.desc())
         .all()

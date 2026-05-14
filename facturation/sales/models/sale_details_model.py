@@ -18,3 +18,7 @@ class SaleDetail(Base):
 
     sale = relationship("Sale", back_populates="details")
     product = relationship("Product")
+
+    @property
+    def product_name(self) -> str:
+        return self.product.name if self.product is not None else ""

@@ -24,6 +24,13 @@ interface AlertMessage {
   message: string;
 }
 
+interface SellerInfo {
+  name: string;
+  email?: string;
+  phone?: string;
+  document?: string;
+}
+
 export function SaleForm() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,10 +42,12 @@ export function SaleForm() {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertMessage | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [seller, setSeller] = useState<SellerInfo>({ name: "Vendedor" });
 
-  // Cargar productos al montar el componente
+  // Cargar productos y datos del vendedor al montar el componente
   useEffect(() => {
     fetchProducts();
+    fetchSellerData();
   }, []);
 
   // Buscar productos cuando cambia el término de búsqueda
@@ -71,6 +80,47 @@ export function SaleForm() {
       setProducts([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSellerData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const [userResponse, profileResponse] = await Promise.all([
+        api.get("/users/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        api.get("/profile/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ]);
+
+      setSeller({
+        name: profileResponse.data.full_name || userResponse.data.email || "Vendedor",
+        email: userResponse.data.email,
+        phone: profileResponse.data.phone || undefined,
+        document: profileResponse.data.document || undefined,
+      });
+    } catch (error: any) {
+      console.warn("No se pudo obtener los datos del vendedor:", error);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const userResponse = await api.get("/users/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setSeller({ name: userResponse.data.email || "Vendedor", email: userResponse.data.email });
+      } catch (fallbackError) {
+        console.warn("No se pudo obtener el usuario en fallback:", fallbackError);
+      }
     }
   };
 
@@ -164,7 +214,9 @@ export function SaleForm() {
         items: cartItems,
         total: cartItems.reduce((sum, item) => sum + item.subtotal, 0),
         seller: {
-          name: "Vendedor",
+          name: seller.name,
+          phone: seller.phone,
+          document: seller.document,
         },
       };
       setInvoiceData(invoice);
@@ -264,6 +316,8 @@ export function SaleForm() {
             <h2>Facturación Pro</h2>
             <p>Sistema de Ventas</p>
             <p><strong>Vendedor:</strong> ${invoiceData.seller.name}</p>
+            ${invoiceData.seller.phone ? `<p><strong>Teléfono:</strong> ${invoiceData.seller.phone}</p>` : ""}
+            ${invoiceData.seller.document ? `<p><strong>Documento:</strong> ${invoiceData.seller.document}</p>` : ""}
           </div>
         </div>
 
@@ -487,6 +541,9 @@ export function SaleForm() {
               <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
                 <p className="font-semibold">Datos del vendedor</p>
                 <p>{invoiceData.seller.name}</p>
+                {invoiceData.seller.email ? <p>{invoiceData.seller.email}</p> : null}
+                {invoiceData.seller.phone ? <p>Tel: {invoiceData.seller.phone}</p> : null}
+                {invoiceData.seller.document ? <p>Doc: {invoiceData.seller.document}</p> : null}
               </div>
 
               <div className="flex justify-end">

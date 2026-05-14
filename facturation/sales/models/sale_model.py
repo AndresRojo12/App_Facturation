@@ -15,3 +15,15 @@ class Sale(Base):
 
     user = relationship("User")
     details = relationship("SaleDetail", back_populates="sale")
+
+    @property
+    def seller_name(self) -> str:
+        if self.user is None:
+            return "Vendedor"
+        if getattr(self.user, "profile", None) is not None and getattr(self.user.profile, "full_name", None):
+            return self.user.profile.full_name
+        return self.user.email or "Vendedor"
+
+    @property
+    def seller_email(self) -> str:
+        return self.user.email if self.user is not None else ""

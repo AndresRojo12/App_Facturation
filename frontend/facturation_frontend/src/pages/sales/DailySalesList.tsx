@@ -4,6 +4,7 @@ import { api } from "../../services/api";
 
 interface SaleDetail {
   product_id: number;
+  product_name?: string;
   quantity: number;
   price: number;
 }
@@ -12,6 +13,8 @@ interface SaleRecord {
   id: number;
   total: number;
   created_at: string;
+  seller_name?: string;
+  seller_email?: string;
   details: SaleDetail[];
 }
 
@@ -102,26 +105,28 @@ export default function DailySalesList() {
               <tr>
                 <th className="px-4 py-4 uppercase tracking-[0.2em]">N° Venta</th>
                 <th className="px-4 py-4 uppercase tracking-[0.2em]">Fecha</th>
+                <th className="px-4 py-4 uppercase tracking-[0.2em]">Vendedor</th>
                 <th className="px-4 py-4 uppercase tracking-[0.2em]">Total</th>
+                <th className="px-4 py-4 uppercase tracking-[0.2em]">Productos</th>
                 <th className="px-4 py-4 uppercase tracking-[0.2em]">Ítems</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/70 bg-slate-950">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
                     Cargando ventas...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-red-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-red-400">
                     {error}
                   </td>
                 </tr>
               ) : sales.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
                     No hay ventas registradas para el día de hoy.
                   </td>
                 </tr>
@@ -140,8 +145,14 @@ export default function DailySalesList() {
                         minute: "2-digit",
                       })}
                     </td>
+                    <td className="px-4 py-4 text-slate-200">
+                      {sale.seller_name || sale.seller_email || "Sin vendedor"}
+                    </td>
                     <td className="px-4 py-4 text-cyan-300">
                       ${sale.total.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-4">
+                      {sale.details.map((detail) => detail.product_name || `ID ${detail.product_id}`).join(", ")}
                     </td>
                     <td className="px-4 py-4">{sale.details.length}</td>
                   </tr>

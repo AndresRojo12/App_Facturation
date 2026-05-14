@@ -12,6 +12,7 @@ interface SaleRecord {
   id: number;
   total: number;
   created_at: string;
+  seller_name?: string;
   details: SaleDetail[];
 }
 
@@ -108,6 +109,7 @@ export default function InvoicesList() {
               <tr>
                 <th className="px-4 py-4 uppercase tracking-[0.2em]">N° Factura</th>
                 <th className="px-4 py-4 uppercase tracking-[0.2em]">Fecha</th>
+                <th className="px-4 py-4 uppercase tracking-[0.2em]">Vendedor</th>
                 <th className="px-4 py-4 uppercase tracking-[0.2em]">Total</th>
                 <th className="px-4 py-4 uppercase tracking-[0.2em]">Ítems</th>
               </tr>
@@ -147,6 +149,9 @@ export default function InvoicesList() {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
+                    </td>
+                    <td className="px-4 py-4 text-slate-200">
+                      {sale.seller_name || "Sin vendedor"}
                     </td>
                     <td className="px-4 py-4 text-cyan-300">
                       ${sale.total.toFixed(2)}
