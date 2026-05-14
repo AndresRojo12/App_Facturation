@@ -64,7 +64,7 @@ export function SaleForm() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setProducts(Array.isArray(response.data?.products) ? response.data.products.filter(p => p.activo) : []);
+      setProducts(Array.isArray(response.data?.products) ? response.data.products.filter((p: any) => p.activo) : []);
     } catch (error) {
       console.error("Error al obtener productos:", error);
       showAlert("error", "Error al cargar los productos");
@@ -157,12 +157,15 @@ export function SaleForm() {
         },
       });
       const sale = response.data;
-      // generar factura
+      // generar factura con datos del vendedor
       const invoice = {
         invoice_number: `FAC-${sale.id.toString().padStart(6, "0")}`,
         date: new Date().toLocaleDateString(),
         items: cartItems,
         total: cartItems.reduce((sum, item) => sum + item.subtotal, 0),
+        seller: {
+          name: "Vendedor",
+        },
       };
       setInvoiceData(invoice);
       setShowInvoice(true);
@@ -170,7 +173,7 @@ export function SaleForm() {
       showAlert("success", "Venta realizada exitosamente");
       // limpiar carrito
       setCartItems([]);
-      fetchProducts;
+      fetchProducts();
     } catch (error) {
       console.error("Error al realizar la venta:", error);
       showAlert("error", "Error al realizar la venta");
@@ -260,6 +263,7 @@ export function SaleForm() {
           <div>
             <h2>Facturación Pro</h2>
             <p>Sistema de Ventas</p>
+            <p><strong>Vendedor:</strong> ${invoiceData.seller.name}</p>
           </div>
         </div>
 
@@ -479,13 +483,20 @@ export function SaleForm() {
               </table>
             </div>
 
-            <div className="mt-6 flex justify-end">
-              <div className="text-right">
-                <p className="text-gray-600">Total a pagar</p>
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
+                <p className="font-semibold">Datos del vendedor</p>
+                <p>{invoiceData.seller.name}</p>
+              </div>
 
-                <p className="text-4xl font-bold text-blue-600">
-                  ${invoiceData.total.toFixed(2)}
-                </p>
+              <div className="flex justify-end">
+                <div className="text-right">
+                  <p className="text-gray-600">Total a pagar</p>
+
+                  <p className="text-4xl font-bold text-blue-600">
+                    ${invoiceData.total.toFixed(2)}
+                  </p>
+                </div>
               </div>
             </div>
 

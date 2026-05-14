@@ -1,50 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "../services/api";
 
-const invoiceRows = [
-  {
-    id: "F001-000018",
-    client: "María López",
-    date: "25/05/2024",
-    total: "$120.00",
-    status: "Pagada",
-  },
-  {
-    id: "F001-000017",
-    client: "Carlos Pérez",
-    date: "25/05/2024",
-    total: "$85.50",
-    status: "Pagada",
-  },
-  {
-    id: "F001-000016",
-    client: "Ana Gómez",
-    date: "25/05/2024",
-    total: "$230.00",
-    status: "Pagada",
-  },
-  {
-    id: "F001-000015",
-    client: "Juan Martínez",
-    date: "24/05/2024",
-    total: "$75.00",
-    status: "Cancelada",
-  },
-  {
-    id: "F001-000014",
-    client: "Pedro Ruiz",
-    date: "24/05/2024",
-    total: "$150.00",
-    status: "Pagada",
-  },
-];
-
 const navigationItems = [
-  { label: "Dashboard", active: true },
-  { label: "Punto de Venta", active: false },
-  { label: "Productos", active: false },
-  { label: "Facturas", active: false },
+  { label: "Dashboard", path: "/dashboard" },
+  { label: "Punto de Venta", path: "/sales" },
+  { label: "Productos", path: "/products" },
+  { label: "Facturas", path: "/invoices/history" },
+  { label: "Perfil", path: "/profile" },
 ];
 
 export default function Dashboard() {
@@ -54,7 +17,10 @@ export default function Dashboard() {
   const [todaySalesAmount, setTodaySalesAmount] = useState(0);
   const [allInvoicesCount, setAllInvoicesCount] = useState(0);
   const [last7DaysSales, setLast7DaysSales] = useState<any[]>([]);
+  const [userName, setUserName] = useState<string>("Administrador");
+  const [userEmail, setUserEmail] = useState<string>("admin@sistema.com");
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Función para obtener la cantidad de productos
   const fetchProductsCount = async () => {
@@ -131,6 +97,30 @@ export default function Dashboard() {
     }
   };
 
+  const fetchCurrentUser = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const [profileResponse, userResponse] = await Promise.all([
+        api.get("/profile/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        api.get("/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      const profileData = profileResponse.data || {};
+      const userData = userResponse.data || {};
+
+      setUserName(profileData.full_name || userData.email || "Administrador");
+      setUserEmail(userData.email || "admin@sistema.com");
+    } catch (error: any) {
+      console.warn("No se pudo obtener los datos del usuario actual:", error);
+    }
+  };
+
   const fetchLast7DaysSales = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -164,6 +154,7 @@ export default function Dashboard() {
     fetchTodayInvoicesCount();
     fetchAllInvoicesCount();
     fetchLast7DaysSales();
+    fetchCurrentUser();
   }, []);
 
   // Tarjetas de resumen con datos dinámicos
@@ -235,19 +226,17 @@ export default function Dashboard() {
               <button
                 key={item.label}
                 type="button"
-                onClick={() => {
-                  if (item.label === "Productos") navigate("/products");
-                  if (item.label === "Facturas") navigate("/invoices/history");
-                  if (item.label === "Punto de Venta") navigate("/sales");
-                }}
+                onClick={() => navigate(item.path)}
                 className={`flex w-full items-center justify-between rounded-3xl px-4 py-3 text-left text-sm transition ${
-                  item.active
+                  location.pathname === item.path
                     ? "bg-cyan-500/10 text-cyan-300 shadow-inner shadow-cyan-500/10"
                     : "text-slate-300 hover:bg-slate-800/70 hover:text-white"
                 }`}
               >
                 <span>{item.label}</span>
-                {item.active ? <span className="text-xs">•</span> : null}
+                {location.pathname === item.path ? (
+                  <span className="text-xs">•</span>
+                ) : null}
               </button>
             ))}
           </nav>
@@ -256,8 +245,10 @@ export default function Dashboard() {
             type="button"
             onClick={() => setShowLogoutModal(true)}
             className="mt-10 flex w-full items-center justify-center rounded-3xl border border-slate-700/60 bg-slate-950/80 px-4 py-3 text-sm font-semibold text-white transition hover:border-cyan-400/30 hover:bg-slate-900"
+
           >
-            Cerrar sesión
+            <span>Cerrar sesión</span>
+            <span className="text-xs"></span>
           </button>
         </aside>
 
@@ -268,7 +259,7 @@ export default function Dashboard() {
                 Dashboard
               </p>
               <h1 className="mt-3 text-3xl font-semibold text-white">
-                Hola, Administrador
+                Hola, {userName}
               </h1>
               <p className="mt-2 max-w-2xl text-slate-400">
                 Revisa tus métricas clave y administra productos, facturas y
@@ -280,8 +271,8 @@ export default function Dashboard() {
                 👤
               </div>
               <div>
-                <p className="font-medium text-white">Administrador</p>
-                <p className="text-sm text-slate-400">admin@sistema.com</p>
+                <p className="font-medium text-white">{userName}</p>
+                <p className="text-sm text-slate-400">{userEmail}</p>
               </div>
             </div>
           </div>
@@ -517,6 +508,7 @@ export default function Dashboard() {
           </div>
         </div>
       ) : null}
+
     </div>
   );
 }
