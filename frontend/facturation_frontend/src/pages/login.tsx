@@ -87,6 +87,15 @@ function AuthLayout() {
               INICIAR SESIÓN
             </button>
           </form>
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => navigate("/register")}
+              className="text-sm text-indigo-600 hover:text-indigo-500"
+            >
+              ¿No tienes cuenta? Crear cuenta
+            </button>
+          </div>
         </div>
       </div>
     </>

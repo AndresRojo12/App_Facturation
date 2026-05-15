@@ -7,6 +7,7 @@ import { SaleForm } from "../pages/sales";
 import InvoicesList from "../pages/sales/InvoicesList";
 import DailySalesList from "../pages/sales/DailySalesList";
 import { ProfilePage } from "../pages/profile";
+import RegisterForm from "../pages/users/RegisterForm";
 
 export default function AppRoutes() {
   const token = localStorage.getItem("token");
@@ -20,6 +21,7 @@ export default function AppRoutes() {
       <Route path="/invoices" element={token ? <InvoicesList /> : <Login />} />
       <Route path="/invoices/history" element={token ? <InvoicesList /> : <Login />} />
       <Route path="/profile" element={token ? <ProfilePage /> : <Login />} />
+      <Route path="/register" element={token ? <Dashboard /> : <RegisterForm />} />
     </Routes>
   );
 }
