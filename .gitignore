@@ -9,7 +9,7 @@ __pycache__/
 
 # variables de entorno
 .env
-.env.production
+.env.production 
 
 # archivos del sistema
 .DS_Store
