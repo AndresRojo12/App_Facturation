@@ -35,7 +35,7 @@ Incluye:
 
 ## Capturas
 
-(images/dashboard.png)
+![dashboard](images/dashboard.png)
 
 ## Licencia
 
