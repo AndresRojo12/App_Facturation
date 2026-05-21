@@ -42,7 +42,7 @@ Incluye:
 ![facturasDia](images/facturiasDia.png)
 ![grid](images/grid.png)
 ![historiaFacturas](images/historiaFacturas.png)
-![historial](images/hidtorial.png)
+![historial](images/historial.png)
 ![perfil](images/perfil.png)
 ![products](images/products.png)
 ![venta](images/venta.png)
