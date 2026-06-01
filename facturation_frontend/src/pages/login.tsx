@@ -2,13 +2,20 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 
-function AuthLayout() {
+interface AuthLayoutProps {
+  onLogin: (token: string | null) => void;
+}
+
+function AuthLayout({ onLogin }: AuthLayoutProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
+
     try {
       const formData = new URLSearchParams();
       formData.append("username", email);
@@ -21,11 +28,13 @@ function AuthLayout() {
       });
 
       localStorage.setItem("token", response.data.access_token);
-
+      onLogin(response.data.access_token);
       navigate("/dashboard");
     } catch (error) {
-        console.log(error);
+      console.error("Login error:", error);
       alert("Credenciales incorrectas");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -82,9 +91,10 @@ function AuthLayout() {
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              INICIAR SESIÓN
+              {loading ? "Ingresando..." : "INICIAR SESIÓN"}
             </button>
           </form>
           <div className="mt-4 text-center">

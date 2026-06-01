@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ProductForm, { type ProductFormData } from "./ProductForm";
 import ProductUpdate, { type ProductUpdateData } from "./ProductUpdate";
 import { api } from "../../services/api";
+import marketLogo from "../../assets/market-pro.png";
 
 const navigationItems = [
   { label: "Dashboard", active: false },
@@ -237,14 +238,14 @@ export default function ProductsList() {
         <aside className="hidden lg:block border-r border-slate-800/80 bg-slate-900/90 p-6">
           <div className="mb-10 flex items-center gap-3 rounded-3xl bg-slate-950/80 p-4 shadow-xl shadow-slate-950/20">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/15 text-2xl text-cyan-300">
-              💼
+              <img src={marketLogo} alt="Market Pro" />
             </div>
             <div>
               <p className="text-sm uppercase tracking-[0.24em] text-slate-500">
                 Facturación
               </p>
               <h2 className="text-lg font-semibold text-white">
-                Facturación Pro
+                Market Pro
               </h2>
             </div>
           </div>
