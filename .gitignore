@@ -21,3 +21,15 @@ build/
 
 
 out/
+
+# Electron
+frontend/build_electron/
+frontend/out/
+frontend/make/
+
+# Python
+*.spec
+
+*.exe
+*.zip
+*.nupkg

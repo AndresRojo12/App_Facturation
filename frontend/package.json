@@ -1,5 +1,5 @@
 {
-  "name": "market-pro",
+  "name": "market_pro",
   "productName": "Market Pro",
   "version": "1.0.0",
   "description": "facturaction frontend",
@@ -17,11 +17,47 @@
   "main": "index.js",
   "scripts": {
     "start": "electron-forge start",
-    "build-frontend": "cd ../facturation_frontend && npm run build",
+    "build-frontend": "cd ../facturation_frontend && npm run build && cd ../frontend && npm run copy-frontend",
     "dev-frontend": "cd ../facturation_frontend && npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "app:dir": "electron-builder --dir",
+    "app:dist": "electron-builder",
+    "copy-frontend": "copyfiles -u 1 ../facturation_frontend/dist/**/* dist"
+  },
+  "build": {
+    "appId": "com.marketpro.app",
+    "productName": "Market Pro",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.js",
+      "dist/**/*",
+      "assets/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../facturation/dist/facturation-api.exe",
+        "to": "facturation-api.exe"
+      },
+      {
+        "from": "../facturation/.env.production",
+        "to": ".env.production"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/market.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.1",
@@ -32,7 +68,9 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
     "@electron-forge/plugin-fuses": "^7.11.1",
     "@electron/fuses": "^1.8.0",
-    "electron": "^41.4.0"
+    "copyfiles": "^2.4.1",
+    "electron": "^41.4.0",
+    "electron-builder": "^26.8.1"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1"
